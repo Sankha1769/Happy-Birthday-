@@ -1,0 +1,1660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>21 Doors — A Journey Through Her Universe</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Poppins:wght@300;400;600&family=Gochi+Hand&display=swap" rel="stylesheet">
+    
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden; 
+            background-color: #0c0a18;
+        }
+
+        .font-display { font-family: 'Great Vibes', cursive; }
+        .font-body { font-family: 'Poppins', sans-serif; }
+        .festive-text { font-family: 'Gochi Hand', cursive; }
+
+        .nav-panel, #mainContent, #navToggleIcon, #navToggleX, #navToggle {
+            transition: all 0.3s ease-in-out;
+        }
+        
+        #mainContent, .nav-panel {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        #mainContent::-webkit-scrollbar,
+        .nav-panel::-webkit-scrollbar {
+            display: none;
+        }
+
+        #mainContent {
+            width: 100vw;
+            height: 100vh;
+            position: absolute; 
+            inset: 0;
+            overflow: hidden; 
+            z-index: 10;
+        }
+
+        .page {
+            width: 100vw;
+            height: 100vh;
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 2rem;
+            box-sizing: border-box; 
+            color: white;
+            overflow: hidden;
+            z-index: 1;
+            transition: transform 1s ease-in-out, opacity 1s ease-in-out;
+            opacity: 0;
+            transform: translateX(100vw);
+            background: transparent !important; 
+            pointer-events: none; 
+        }
+
+        .page-active {
+            opacity: 1;
+            transform: translateX(0);
+            z-index: 2;
+            pointer-events: auto;
+        }
+        .page-previous {
+            opacity: 0;
+            transform: translateX(-100vw);
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .poetic-text {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 1.5s ease-out, transform 1.2s ease-out;
+            transition-delay: 0.5s; 
+        }
+        .poetic-text.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.05); }
+        }
+        @keyframes float {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+            100% { transform: translateY(0); }
+        }
+        @keyframes zoomOut {
+            from { transform: scale(1); opacity: 1; }
+            to { transform: scale(8); opacity: 0; }
+        }
+        .page-zooming-out {
+            animation: zoomOut 1.2s ease-in forwards; 
+            z-index: 3; 
+        }
+        @keyframes fallSlowly {
+            from { transform: translateY(0); }
+            to { transform: translateY(110vh); }
+        }
+        @keyframes typewriter {
+            from { width: 0; }
+            to { width: 100%; }
+        }
+        @keyframes blinkCaret {
+            from, to { border-color: transparent; }
+            50% { border-color: white; }
+        }
+        .typewriter {
+            display: inline-block;
+            overflow: hidden;
+            white-space: nowrap;
+            border-right: .15em solid white;
+            animation: typewriter 3s steps(30, end) 1s forwards,
+                       blinkCaret .75s step-end infinite;
+            width: 0;
+        }
+
+        .typing-cursor {
+            border-right: .15em solid white;
+            animation: blinkCaret .75s step-end infinite;
+        }
+        
+        .poem-line {
+            display: inline-block;
+        }
+
+        #door-of-light, #final-door {
+            border: 2px solid #f0e68c;
+            border-radius: 5px;
+            box-shadow: 0 0 15px 5px #f0e68c, 0 0 30px 10px #f0e68c inset;
+            cursor: pointer;
+            transition: all 0.5s ease;
+        }
+        #door-of-light {
+            width: 80px; height: 120px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        #door-of-light:hover {
+            box-shadow: 0 0 25px 10px #fff, 0 0 40px 15px #fff inset;
+            transform: scale(1.05);
+            background: rgba(255, 255, 255, 0.3);
+        }
+        #final-door {
+            width: 100px; height: 150px;
+            border-radius: 50% 50% 5px 5px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        #final-door:hover {
+            box-shadow: 0 0 30px 12px #fff, 0 0 50px 20px #fff inset;
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .wish, .text-wish {
+            position: absolute;
+            will-change: transform;
+        }
+        .wish {
+            color: white; 
+            text-shadow: 0 0 8px rgba(255, 255, 255, 0.7);
+            z-index: 5;
+        }
+        .text-wish {
+            color: rgba(60, 40, 30, 0.6); 
+            font-family: 'Poppins', sans-serif;
+            font-weight: 300;
+            font-style: italic;
+            text-shadow: 0 0 3px rgba(255, 255, 255, 0.5); 
+            z-index: 6; 
+        }
+
+        #mirror {
+            width: 250px;
+            height: 350px;
+            border: 8px solid silver;
+            border-radius: 150px / 100px;
+            background: linear-gradient(135deg, #e0eafc 20%, #cfdef3 80%);
+            box-shadow: 0 0 20px 5px rgba(255, 255, 255, 0.7), 0 0 30px 10px rgba(200, 200, 255, 0.5) inset;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        #mirror-text {
+            color: #304352;
+        }
+        
+        .book {
+            width: 100px;
+            height: 140px;
+            background-color: #8B4513;
+            border: 2px solid #D2B48C;
+            border-radius: 5px 2px 2px 5px;
+            margin: 1rem;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 8px;
+            font-size: 0.65rem;
+            color: #f0e68c;
+            overflow: hidden;
+            font-family: 'Poppins', sans-serif;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+            line-height: 1.4;
+        }
+        .book:nth-child(1) { transform: rotate(-5deg); margin-top: 10px; }
+        .book:nth-child(2) { transform: rotate(3deg); margin-top: -5px; }
+        .book:nth-child(3) { transform: rotate(-2deg); }
+        .book:nth-child(4) { transform: rotate(6deg); margin-top: 15px; }
+        .book:nth-child(5) { transform: rotate(-4deg); margin-top: 5px; }
+        .book:hover { transform: scale(1.1) rotate(0deg) !important; z-index: 10; }
+        .book.open { 
+            transform: scale(1.2) rotate(0deg) !important; 
+            z-index: 20; 
+            box-shadow: 0 0 15px rgba(255,255,255,0.3);
+            border-color: #fff;
+            background-color: #5a3e2b;
+        }
+
+        #clock-face {
+            width: 200px; height: 200px;
+            border: 5px solid white;
+            border-radius: 50%;
+            position: relative;
+            box-shadow: 0 0 15px rgba(255,255,255,0.5);
+        }
+        @keyframes handRotate {
+            0% { transform: translateX(-50%) translateY(-100%) rotate(0deg); }
+            100% { transform: translateX(-50%) translateY(-100%) rotate(360deg); }
+        }
+        .clock-hour {
+            position: absolute; font-size: 1.2rem; cursor: pointer;
+            transform-origin: center; transition: transform 0.3s ease;
+        }
+        .clock-hour:hover { transform: scale(1.3); color: #f0e68c; }
+        
+        #gift-box { font-size: 6rem; cursor: pointer; animation: pulse 2s infinite; }
+        
+        #secret-message {
+            font-family: monospace; font-size: 1.5rem; letter-spacing: 4px;
+            cursor: pointer; color: #4286f4; text-shadow: 0 0 10px #4286f4;
+        }
+        
+        #glowing-heart-btn {
+            position: absolute; bottom: 30px; right: 30px;
+            font-size: 1.5rem; color: #ff9a9e; animation: pulse 1.5s infinite;
+            cursor: pointer; z-index: 100;
+        }
+        
+        #easter-egg-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(10px);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 999; opacity: 0; pointer-events: none;
+            transition: opacity 0.5s ease;
+        }
+        #easter-egg-modal.visible { opacity: 1; pointer-events: auto; }
+
+        .scroll-hint {
+            position: absolute; bottom: 20px; left: 0; width: 100%; 
+            text-align: center; font-size: 0.8rem; color: rgba(255, 255, 255, 0.5);
+            animation: pulse 2s infinite; z-index: 10;
+        }
+
+        .poetic-nav-style {
+            background: rgba(12, 10, 24, 0.9); backdrop-filter: blur(8px);
+            border: 1px solid rgba(240, 230, 140, 0.3);
+            box-shadow: 0 0 10px rgba(240, 230, 140, 0.15); color: white; 
+        }
+        .poetic-nav-style a.nav-link {
+            color: white; transition: background-color 0.2s ease, color 0.2s ease;
+        }
+        .poetic-nav-style a.nav-link:hover {
+            background-color: rgba(240, 230, 140, 0.1); color: #f0e68c; 
+        }
+
+        #particle-canvas {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: 0; pointer-events: none;
+        }
+
+        .rain-glass-panel {
+            background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 20px;
+            padding: 2rem; box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+        @keyframes liquid-morph {
+            0% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
+            50% { border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%; }
+            100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
+        }
+        .liquid-orb {
+            animation: liquid-morph 8s ease-in-out infinite;
+            background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.1), rgba(255,255,255,0.05) 60%, rgba(255,255,255,0));
+            border: 1px solid rgba(255,255,255,0.3);
+            box-shadow: inset 0 0 20px rgba(255,255,255,0.2), 0 0 25px rgba(100, 200, 255, 0.6);
+            transition: all 0.3s ease;
+        }
+        .liquid-orb:hover {
+            transform: scale(1.15);
+            box-shadow: inset 0 0 30px rgba(255,255,255,0.4), 0 0 40px rgba(100, 230, 255, 0.8);
+            background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.2), rgba(255,255,255,0.1) 60%, rgba(255,255,255,0));
+        }
+        .css-rain-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 0;
+            background-image: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0.2) 30%, rgba(255,255,255,0));
+            background-size: 2px 80vh; animation: cssRain 1s linear infinite; opacity: 0.1;
+        }
+        @keyframes cssRain {
+            0% { background-position: 0% 0%; }
+            100% { background-position: 0% 100%; }
+        }
+
+        @keyframes orbit-rotate { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes orbit-counter-rotate { 0% { transform: rotate(0deg); } 100% { transform: rotate(-360deg); } }
+        .orbit-system-container { position: relative; width: 300px; height: 300px; margin-top: 2rem; }
+        .orbit-ring {
+            position: absolute; width: 100%; height: 100%;
+            border: 1px dashed rgba(255, 255, 255, 0.15); border-radius: 50%;
+            animation: orbit-rotate 40s linear infinite;
+        }
+        .orbit-center-star {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            font-size: 4rem; filter: drop-shadow(0 0 20px #f0e68c); z-index: 10; animation: pulse 3s infinite;
+        }
+        .planet-wrapper {
+            position: absolute; top: 50%; left: 50%; width: 100px; height: 100px;
+            margin-top: -50px; margin-left: -50px;
+        }
+        .pos-1 { transform: rotate(0deg) translate(0, -150px) rotate(0deg); }
+        .pos-2 { transform: rotate(120deg) translate(0, -150px) rotate(-120deg); }
+        .pos-3 { transform: rotate(240deg) translate(0, -150px) rotate(-240deg); }
+        .planet-content {
+            width: 100%; height: 100%; display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            animation: orbit-counter-rotate 40s linear infinite;
+        }
+        .planet-orb { transition: all 0.3s ease; }
+        .planet-wrapper:hover .planet-orb { transform: scale(1.2); filter: brightness(1.3); }
+
+        @keyframes flyAround {
+            0% { left: 10%; top: 20%; transform: rotate(10deg) scale(1); }
+            25% { left: 80%; top: 15%; transform: rotate(-10deg) scale(0.8); }
+            50% { left: 60%; top: 70%; transform: rotate(5deg) scale(1.1); }
+            75% { left: 20%; top: 60%; transform: rotate(-15deg) scale(0.9); }
+            100% { left: 10%; top: 20%; transform: rotate(10deg) scale(1); }
+        }
+        @keyframes sway { 0%, 100% { transform: rotate(-5deg); } 50% { transform: rotate(5deg); } }
+        .animate-sway { animation: sway 3s ease-in-out infinite; transform-origin: bottom center; }
+
+        .flying-butterfly {
+            position: absolute;
+            font-size: 4rem;
+            cursor: pointer;
+            animation: flyAround 12s linear infinite;
+            transition: transform 0.2s;
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
+            z-index: 50; 
+        }
+        .flying-butterfly:active { transform: scale(0.5); }
+
+        .window-frame {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+            width: 300px; height: 300px; background: #4a3b2a;
+            padding: 10px; border-radius: 5px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .window-pane {
+            background: rgba(200, 220, 230, 0.2);
+            position: relative; overflow: hidden; cursor: pointer;
+        }
+        .window-fog {
+            position: absolute; inset: 0; background: rgba(255,255,255,0.7);
+            transition: opacity 0.8s ease; display: flex; align-items: center; justify-content: center;
+            color: #555; font-size: 0.8rem; font-style: italic;
+        }
+        .window-pane:hover .window-fog { opacity: 0.2; }
+        .pane-content {
+            position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+            font-weight: bold; color: #fff; text-shadow: 0 0 5px #000; opacity: 0;
+            transition: opacity 0.3s;
+            text-align: center; padding: 5px; font-size: 1rem;
+        }
+        .window-pane:hover .pane-content { opacity: 1; }
+
+        .envelope-container {
+            perspective: 1000px; width: 200px; height: 140px; position: relative; margin-top: 2rem; cursor: pointer;
+        }
+        .envelope {
+            width: 100%; height: 100%; background: #e0c097; position: relative;
+            transform-style: preserve-3d; transition: transform 0.6s;
+        }
+        .flap {
+            position: absolute; top: 0; left: 0; width: 0; height: 0;
+            border-left: 100px solid transparent; border-right: 100px solid transparent;
+            border-top: 70px solid #dcb083; transform-origin: top; transition: transform 0.4s 0.2s; z-index: 10;
+        }
+        .envelope.open .flap { transform: rotateX(180deg); z-index: 0; }
+        .letter-paper {
+            position: absolute; top: 10px; left: 10px; width: 180px; height: 120px;
+            background: white; transition: transform 0.5s 0.6s, opacity 0.2s 0.5s; z-index: 5;
+            display: flex; align-items: center; justify-content: center; font-size: 0.6rem; color: #333; padding: 10px;
+            box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+            
+            transform: translateY(20px) scale(0.9);
+            opacity: 0;
+        }
+        .envelope.open .letter-paper { 
+            transform: translateY(-80px) scale(1);
+            opacity: 1;
+        }
+
+        .compass-container {
+            width: 200px; height: 200px; border: 8px solid #b8860b; border-radius: 50%;
+            background: #222; position: relative; box-shadow: 0 0 20px rgba(184, 134, 11, 0.3);
+            cursor: pointer; margin-top: 2rem;
+        }
+        .compass-face {
+            width: 100%; height: 100%; border-radius: 50%; position: relative;
+            background: radial-gradient(circle, #333, #111);
+        }
+        .compass-needle {
+            position: absolute; top: 50%; left: 50%;
+            width: 16px; height: 140px; 
+            transform: translate(-50%, -50%) rotate(0deg);
+            transition: transform 2.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+            filter: drop-shadow(0 2px 3px rgba(0,0,0,0.5)); 
+            z-index: 5;
+        }
+        .needle-north {
+            position: absolute; top: 0; left: 0; width: 0; height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-bottom: 70px solid #ff0000; 
+        }
+        .needle-south {
+            position: absolute; bottom: 0; left: 0; width: 0; height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-top: 70px solid #f0f0f0; 
+        }
+        .compass-pivot {
+            position: absolute; top: 50%; left: 50%;
+            width: 14px; height: 14px;
+            background: #ffd700;
+            border: 2px solid #8b4513;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.6);
+        }
+
+        .compass-label {
+            position: absolute; color: #b8860b; font-weight: bold; font-size: 1.2rem;
+        }
+        .c-n { top: 10px; left: 50%; transform: translateX(-50%); }
+        .c-s { bottom: 10px; left: 50%; transform: translateX(-50%); }
+        .c-e { right: 10px; top: 50%; transform: translateY(-50%); }
+        .c-w { left: 10px; top: 50%; transform: translateY(-50%); }
+
+        .floating-balloon {
+            position: absolute; bottom: -100px; font-size: 3rem; cursor: pointer;
+            animation: floatUp 8s linear forwards; user-select: none;
+            pointer-events: auto;
+        }
+        @keyframes floatUp {
+            to { bottom: 110vh; }
+        }
+
+    </style>
+</head>
+<body class="font-body bg-gray-900 overflow-hidden"> 
+
+    <canvas id="particle-canvas"></canvas>
+
+    <main id="mainContent">
+
+        <section id="page-1" class="page">
+            <h1 class="font-display text-6xl md:text-8xl poetic-text visible" style="text-shadow: 0 0 15px #f0e68c;">21 Doors</h1>
+            <p class="text-xl md:text-2xl mt-4 poetic-text visible" style="transition-delay: 0.8s;">A Journey Through Your Universe</p>
+            <div id="door-of-light" class="mt-12 poetic-text visible interactive-el" style="transition-delay: 1.2s;" title="Click to begin the journey"></div>
+            <p class="text-lg md:text-xl mt-4 poetic-text visible" style="transition-delay: 1.5s;">Click the door to begin</p>
+        </section>
+
+        <section id="page-2" class="page">
+            <h2 class="font-display text-4xl md:text-5xl poetic-text" style="text-shadow: 0 0 10px #fff;">The Day the Stars Whispered 21</h2>
+            <p id="star-whisper" class="text-lg md:text-xl mt-4 poetic-text" style="transition-delay: 0.5s; min-height: 2.5em;">
+                A whisper of magic...
+            </p>
+            <div class="scroll-hint">Tap anywhere to continue</div>
+        </section>
+        
+        <section id="page-3" class="page">
+            <h2 class="font-display text-4xl md:text-5xl poetic-text text-white">The Garden of Untold Wishes</h2>
+            <p class="text-lg md:text-xl mt-4 poetic-text text-gray-200" style="transition-delay: 0.5s;">Where every petal holds a dream.</p>
+            <div id="glowing-heart-btn" class="interactive-el" title="A secret...">💖</div>
+            <div class="scroll-hint text-gray-200">Tap anywhere to continue</div>
+        </section>
+        
+        <section id="page-4" class="page">
+            <h2 class="font-display text-4xl md:text-5xl poetic-text text-gray-800">The Mirror of Time</h2>
+            <p class="text-lg md:text-xl mt-4 poetic-text text-gray-700" style="transition-delay: 0.5s;">Look into the past, see the future.</p>
+            <div id="mirror" class="mt-8 poetic-text interactive-el" style="transition-delay: 0.8s;">
+                <div class="mirror-inner" style="width:100%; height:100%; border-radius:inherit; overflow:hidden; position:relative;">
+                    <img id="mirror-img" 
+                        src="Main.jpg" 
+                        onerror="this.src='https://placehold.co/250x350/cfdef3/304352?text=Looking+Back'"
+                        alt="Mirror reflection" 
+                        style="width:100%; height:100%; object-fit:cover; display:block;" /> 
+                </div>
+            </div>
+            <p id="mirror-text" class="text-xl md:text-2xl font-display transition-opacity duration-500 mt-4" 
+                style="color: #304352;">
+                Tap to see...
+            </p>
+            <div class="scroll-hint text-gray-600">Tap anywhere to continue</div>
+        </section>
+
+        <section id="page-6" class="page">
+            <h2 class="font-display text-4xl md:text-5xl poetic-text text-white">The Sky Writes Your Name</h2>
+            <div class="mt-8 poetic-text" style="transition-delay: 0.5s;">
+                <p id="sky-message" class="text-4xl md:text-5xl font-display text-white h-16" style="text-shadow: 0 0 15px rgba(255,255,255,0.8);"></p>
+                <p id="sky-final" class="text-xl mt-4 text-white opacity-0 transition-opacity duration-1000" style="text-shadow: 0 0 10px #a1c4fd;"></p>
+            </div>
+            <div class="scroll-hint">Tap anywhere to continue</div>
+        </section>
+
+        <section id="page-7" class="page">
+            <h2 class="font-display text-4xl md:text-5xl poetic-text">The Library of Laughs</h2>
+            <p class="text-lg md:text-xl mt-4 poetic-text" style="transition-delay: 0.5s;">Tap a book to uncover a giggle.</p>
+            <div class="flex flex-wrap justify-center mt-8 poetic-text" style="transition-delay: 0.8s; max-width: 600px;">
+                <div class="book interactive-el" style="animation-delay: 0.1s; background-color: #8B4513; border-color: #D2B48C;"></div>
+                <div class="book interactive-el" style="animation-delay: 0.3s; background-color: #556B2F; border-color: #8FBC8F;"></div>
+                <div class="book interactive-el" style="animation-delay: 0.2s; background-color: #800000; border-color: #CD5C5C;"></div>
+                <div class="book interactive-el" style="animation-delay: 0.4s; background-color: #483D8B; border-color: #9370DB;"></div>
+                <div class="book interactive-el" style="animation-delay: 0.15s; background-color: #2F4F4F; border-color: #5F9EA0;"></div>
+            </div>
+            <div class="h-20"></div> 
+            <div class="scroll-hint">Tap anywhere to continue</div>
+        </section>
+
+        <section id="page-8" class="page">
+            <h2 class="font-display text-4xl md:text-5xl poetic-text">The Comedy Clock</h2>
+            <p class="text-lg md:text-xl mt-4 poetic-text" style="transition-delay: 0.5s;">Tap an hour for a time-saving joke.</p>
+            <div id="clock-face" class="mt-8 poetic-text interactive-el" style="transition-delay: 0.8s; width: 220px; height: 220px;">
+            </div>
+            <p id="clock-thought" class="text-lg md:text-xl mt-8 h-20 px-4 transition-opacity duration-500 flex items-center justify-center text-center text-yellow-100"></p>
+            <div class="scroll-hint">Tap anywhere to continue</div>
+        </section>
+        
+        <section id="page-9" class="page">
+            <h2 class="font-display text-4xl md:text-5xl poetic-text">The Bridge Between Then and Now</h2>
+            <p class="text-lg md:text-xl mt-4 poetic-text" style="transition-delay: 0.5s;">She has walked through seasons to bloom here.</p>
+            
+            <div class="relative w-full max-w-3xl mt-10 h-64 flex items-center justify-between px-4 md:px-12 poetic-text" style="transition-delay: 0.8s;">
+                <div class="bridge-stone interactive-el group relative flex flex-col items-center cursor-pointer" data-msg="Your laughter that heals the quietest moments.">
+                    <div class="w-16 h-16 rounded-full border-2 border-blue-300 flex items-center justify-center bg-blue-900/50 hover:bg-blue-300 transition-all transform hover:scale-110 shadow-[0_0_15px_rgba(147,197,253,0.5)]">🌱</div>
+                    <span class="mt-4 text-sm font-body text-blue-200 opacity-70 group-hover:opacity-100 transition-opacity">The Roots</span>
+                </div>
+                <div class="h-0.5 flex-1 bg-gradient-to-r from-blue-300 via-purple-300 to-pink-300 mx-4 opacity-50"></div>
+                
+                <div class="bridge-stone interactive-el group relative flex flex-col items-center cursor-pointer" data-msg="Your strength that turns obstacles into paths.">
+                    <div class="w-16 h-16 rounded-full border-2 border-purple-300 flex items-center justify-center bg-purple-900/50 hover:bg-purple-700 transition-all transform hover:scale-110 shadow-[0_0_15px_rgba(216,180,254,0.5)]">🦋</div>
+                    <span class="mt-4 text-sm font-body text-purple-200 opacity-70 group-hover:opacity-100 transition-opacity">The Journey</span>
+                </div>
+                <div class="h-0.5 flex-1 bg-gradient-to-r from-purple-300 to-pink-300 mx-4 opacity-50"></div>
+
+                <div class="bridge-stone interactive-el group relative flex flex-col items-center cursor-pointer" data-msg="The infinite light you carry within.">
+                    <div class="w-16 h-16 rounded-full border-2 border-pink-300 flex items-center justify-center bg-pink-900/50 hover:bg-pink-700 transition-all transform hover:scale-110 shadow-[0_0_15px_rgba(253,164,175,0.5)]">✨</div>
+                    <span class="mt-4 text-sm font-body text-pink-200 opacity-70 group-hover:opacity-100 transition-opacity">The Now</span>
+                </div>
+            </div>
+
+            <p id="bridge-text" class="text-xl md:text-2xl mt-8 h-12 text-white font-display transition-all duration-500 opacity-0 translate-y-4 px-4">
+            </p>
+
+            <div class="scroll-hint">Tap anywhere to continue</div>
+        </section>
+
+        <section id="page-10" class="page">
+            <div class="css-rain-overlay"></div> 
+            <h2 class="font-display text-4xl md:text-5xl poetic-text" style="text-shadow: 0 0 15px rgba(135, 206, 250, 0.6);">The Room of Rain</h2>
+            <p class="text-lg md:text-xl mt-4 poetic-text" style="transition-delay: 0.5s; color: #a0d8ef;">Every drop tells a story of growth.</p>
+            
+            <div class="rain-glass-panel relative w-full max-w-3xl mt-10 h-72 flex items-center justify-around px-4 md:px-12 poetic-text" style="transition-delay: 0.8s;">
+                
+                <div class="rain-drop interactive-el group relative flex flex-col items-center cursor-pointer" data-msg="Your sweat that waters the flowers of tomorrow.">
+                    <div class="liquid-orb w-20 h-20 flex items-center justify-center text-2xl text-blue-100">💧</div>
+                    <span class="mt-4 text-sm font-body text-blue-200 opacity-70 group-hover:opacity-100 transition-opacity font-bold tracking-widest">EMPATHY</span>
+                </div>
+                
+                <div class="rain-drop interactive-el group relative flex flex-col items-center cursor-pointer" data-msg="Your depth that is as vast as the ocean.">
+                    <div class="liquid-orb w-24 h-24 flex items-center justify-center text-3xl text-cyan-100" style="animation-delay: -2s;">🌊</div>
+                    <span class="mt-4 text-sm font-body text-cyan-200 opacity-70 group-hover:opacity-100 transition-opacity font-bold tracking-widest">DEPTH</span>
+                </div>
+
+                <div class="rain-drop interactive-el group relative flex flex-col items-center cursor-pointer" data-msg="The way you turn the heavy grey into a spectrum of light.">
+                    <div class="liquid-orb w-20 h-20 flex items-center justify-center text-2xl text-sky-100" style="animation-delay: -5s;">🌈</div>
+                    <span class="mt-4 text-sm font-body text-sky-200 opacity-70 group-hover:opacity-100 transition-opacity font-bold tracking-widest">ALCHEMY</span>
+                </div>
+            </div>
+
+            <p id="rain-text" class="text-xl md:text-2xl mt-8 h-12 text-blue-100 font-display transition-all duration-500 opacity-0 translate-y-4 px-4" style="text-shadow: 0 0 10px rgba(100,200,255,0.5);">
+            </p>
+
+            <div id="rain-word-container" class="absolute inset-0 pointer-events-none"></div>
+            <div class="scroll-hint" style="color: rgba(173, 216, 230, 0.6);">Tap anywhere to continue</div>
+        </section>
+
+        <section id="page-11" class="page">
+            <h2 class="font-display text-4xl md:text-5xl poetic-text">The Candle of Forever</h2>
+            <div class="text-7xl mt-8 poetic-text" style="transition-delay: 0.5s; text-shadow: 0 0 15px #f0e68c; animation: pulse 3s infinite;">🕯️</div>
+            <p class="text-lg md:text-xl mt-4 poetic-text" style="transition-delay: 1s;">A quiet light for the road ahead.</p>
+            <p class="text-lg md:text-xl mt-2 poetic-text" style="transition-delay: 1.5s;">Like dawn stitched into the dark,</p>
+            <p class="text-lg md:text-xl mt-2 poetic-text" style="transition-delay: 2s;">A small eternity of warmth,</p>
+            <p class="text-lg md:text-xl mt-2 poetic-text" style="transition-delay: 2.5s;">Carrying you gently toward your tomorrow.</p>
+            <div class="scroll-hint">Tap anywhere to continue</div>
+        </section>
+
+        <section id="page-12" class="page">
+            <h2 class="font-display text-4xl md:text-5xl poetic-text">The Voice of the Universe</h2>
+            <p class="text-lg md:text-xl mt-4 poetic-text" style="transition-delay: 0.5s;">The cosmos has a message just for you.</p>
+            
+            <div class="orbit-system-container poetic-text" style="transition-delay: 0.8s;">
+                <div class="orbit-center-star">☀️</div>
+                <div class="orbit-ring">
+                    <div class="planet-wrapper pos-1">
+                        <div class="planet-content cosmic-body interactive-el group cursor-pointer" data-msg="You shine with the same fire that lights the galaxies.">
+                            <div class="planet-orb w-16 h-16 rounded-full border-2 border-yellow-300 flex items-center justify-center bg-yellow-900/50 hover:bg-yellow-700 shadow-[0_0_20px_rgba(253,224,71,0.6)]">⭐</div>
+                            <span class="mt-2 text-xs font-body text-yellow-200 opacity-70 group-hover:opacity-100 transition-opacity">Stardust</span>
+                        </div>
+                    </div>
+                    <div class="planet-wrapper pos-2">
+                         <div class="planet-content cosmic-body interactive-el group cursor-pointer" data-msg="Even in your quietest phases, you are whole.">
+                            <div class="planet-orb w-16 h-16 rounded-full border-2 border-gray-300 flex items-center justify-center bg-gray-800/50 hover:bg-gray-600 shadow-[0_0_20px_rgba(209,213,219,0.5)]">🌙</div>
+                            <span class="mt-2 text-xs font-body text-gray-200 opacity-70 group-hover:opacity-100 transition-opacity">Phases</span>
+                        </div>
+                    </div>
+                    <div class="planet-wrapper pos-3">
+                         <div class="planet-content cosmic-body interactive-el group cursor-pointer" data-msg="Your soul has gravity, it draws beautiful things close.">
+                            <div class="planet-orb w-16 h-16 rounded-full border-2 border-indigo-400 flex items-center justify-center bg-indigo-900/50 hover:bg-indigo-700 shadow-[0_0_20px_rgba(129,140,248,0.6)]">🪐</div>
+                            <span class="mt-2 text-xs font-body text-indigo-300 opacity-70 group-hover:opacity-100 transition-opacity">Gravity</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <p id="universe-text" class="text-xl md:text-2xl mt-8 h-16 text-white font-display transition-all duration-500 opacity-0 translate-y-4 px-4"></p>
+            <div class="scroll-hint">Tap anywhere to continue</div>
+        </section>
+
+        <section id="page-13" class="page">
+            <div class="absolute bottom-0 left-0 w-full h-1/3 overflow-hidden pointer-events-none z-0">
+                <div class="w-[120%] h-full bg-green-300 rounded-[100%] translate-y-1/2 -translate-x-10 shadow-inner" style="background: linear-gradient(to bottom, #a8e063, #56ab2f);"></div>
+                <div class="absolute bottom-4 left-[10%] text-4xl animate-sway">🌻</div>
+                <div class="absolute bottom-8 left-[30%] text-3xl animate-sway" style="animation-delay: 1s">🌷</div>
+                <div class="absolute bottom-2 left-[60%] text-5xl animate-sway" style="animation-delay: 0.5s">🌼</div>
+                <div class="absolute bottom-6 left-[85%] text-4xl animate-sway" style="animation-delay: 1.5s">🌹</div>
+            </div>
+
+            <h2 class="font-display text-4xl md:text-5xl poetic-text text-gray-800 z-10 relative">The Butterfly Flight</h2>
+            <p class="text-lg md:text-xl mt-4 poetic-text text-gray-700 z-10 relative" style="transition-delay: 0.5s;">Catch the light to reveal the meaning.</p>
+            
+            <div class="relative w-full h-64 mt-10 poetic-text z-10" style="transition-delay: 0.8s;">
+                <div id="flying-butterfly" class="flying-butterfly interactive-el" title="Catch me!">🦋</div>
+            </div>
+
+            <p id="butterfly-text" class="text-xl md:text-2xl mt-8 h-16 text-gray-800 font-display transition-all duration-500 opacity-0 translate-y-4 px-4 z-10 relative">
+            </p>
+
+            <button id="page-13-next" class="mt-8 px-6 py-2 bg-white/40 hover:bg-white/60 rounded-full backdrop-blur-sm transition-all text-gray-800 font-medium interactive-el z-20 shadow-lg">
+                Continue Journey →
+            </button>
+        </section>
+
+        <section id="page-14" class="page">
+            <h2 class="font-display text-4xl md:text-5xl poetic-text">The Silent Poem</h2>
+            <p class="text-lg md:text-xl mt-4 poetic-text text-gray-400 mb-8" style="transition-delay: 0.5s;">(Tap the quill to let the words flow)</p>
+            
+            <div id="poem-container" class="min-h-[200px] flex flex-col items-center justify-center space-y-4 w-full max-w-2xl">
+            </div>
+
+            <div id="quill-btn" class="text-6xl mt-8 interactive-el cursor-pointer hover:scale-110 transition-transform duration-300" style="filter: drop-shadow(0 0 10px white);">
+                🪶
+            </div>
+            <div class="scroll-hint">Tap anywhere to continue</div>
+        </section>
+
+        <section id="page-15" class="page">
+            <h2 class="font-display text-4xl md:text-5xl poetic-text text-gray-800">The Window to Tomorrow</h2>
+            <p class="text-lg md:text-xl mt-4 poetic-text text-gray-600" style="transition-delay: 0.5s;">Wipe the fog to see clearly.</p>
+            
+            <div class="window-frame mt-8 poetic-text interactive-el" style="transition-delay: 0.8s;">
+                <div class="window-pane">
+                    <div class="pane-content text-2xl">You brighten every tomorrow.</div>
+                    <div class="window-fog">Hover/Touch</div>
+                </div>
+                <div class="window-pane">
+                    <div class="pane-content text-2xl">Your spirit writes tomorrow.</div>
+                    <div class="window-fog">Hover/Touch</div>
+                </div>
+                <div class="window-pane">
+                    <div class="pane-content text-2xl">Your dreams bloom quietly.</div>
+                    <div class="window-fog">Hover/Touch</div>
+                </div>
+                <div class="window-pane">
+                    <div class="pane-content text-2xl">Your calm softens tomorrow.</div>
+                    <div class="window-fog">Hover/Touch</div>
+                </div>
+            </div>
+
+            <p id="window-text" class="text-xl md:text-2xl mt-8 h-16 text-gray-800 font-display transition-all duration-500 px-4">
+                Look closer...
+            </p>
+            <div class="scroll-hint text-gray-600">Tap anywhere to continue</div>
+        </section>
+
+        <section id="page-16" class="page">
+            <h2 class="font-display text-4xl md:text-5xl poetic-text text-gray-800">The Stardust Letter</h2>
+            <p class="text-lg md:text-xl mt-4 poetic-text text-gray-600" style="transition-delay: 0.5s;">A message sent from the origin.</p>
+            
+            <div class="envelope-container poetic-text interactive-el" id="letter-envelope" style="transition-delay: 0.8s;">
+                <div class="envelope">
+                    <div class="flap"></div>
+                    <div class="letter-paper">
+                        <p class="text-center">You have a light that never tries to shine,but somehow, it does.Your smile feels like a small piece of art warm, simple, deep.You stay playful yet thoughtful,and that mix makes you quietly unforgettable.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <p class="text-lg mt-12 text-gray-500 poetic-text">Tap the envelope to open</p>
+            <div class="scroll-hint text-gray-600">Tap anywhere to continue</div>
+        </section>
+
+        <section id="page-17" class="page">
+            <h2 class="font-display text-4xl md:text-5xl poetic-text">The Compass of Heart</h2>
+            <p class="text-lg md:text-xl mt-4 poetic-text" style="transition-delay: 0.5s;">Tap to spin the needle.</p>
+            
+            <div class="compass-container interactive-el poetic-text" id="compass" style="transition-delay: 0.8s;">
+                <div class="compass-face">
+                    <div class="compass-label c-n">N</div>
+                    <div class="compass-label c-s">S</div>
+                    <div class="compass-label c-e">E</div>
+                    <div class="compass-label c-w">W</div>
+                    <div class="compass-needle" id="compass-needle">
+                        <div class="needle-north"></div>
+                        <div class="needle-south"></div>
+                    </div>
+                    <div class="compass-pivot"></div> 
+                </div>
+            </div>
+            
+            <p id="map-text" class="text-xl md:text-2xl mt-8 h-16 text-white font-display transition-all duration-500 opacity-1 translate-y-0 px-4">
+                Where will it guide you?
+            </p>
+            <div class="scroll-hint">Tap anywhere to continue</div>
+        </section>
+
+        <section id="page-18" class="page">
+            <h2 class="font-display text-4xl md:text-5xl poetic-text text-gray-800">The Floating Joy</h2>
+            <p class="text-lg md:text-xl mt-4 poetic-text text-gray-700" style="transition-delay: 0.5s;">Pop the happiness as it flies!</p>
+            
+            <div id="balloon-container" class="absolute inset-0 overflow-hidden pointer-events-none">
+            </div>
+            
+            <p id="balloon-text" class="text-xl md:text-2xl mt-auto mb-20 h-16 text-gray-800 font-display transition-all duration-500 px-4 z-20">
+                Pop them!
+            </p>
+            
+            <button id="page-18-next" class="absolute bottom-10 left-1/2 transform -translate-x-1/2 px-6 py-2 bg-white/40 hover:bg-white/60 rounded-full backdrop-blur-sm transition-all text-gray-800 font-medium interactive-el z-30 shadow-lg">
+                Continue Journey →
+            </button>
+        </section>
+
+        <section id="page-19" class="page">
+            <h2 class="font-display text-4xl md:text-5xl poetic-text">The Secret Message</h2>
+            <p class="text-lg md:text-xl mt-4 poetic-text" style="transition-delay: 0.5s;">Tap a file to decode the truth.</p>
+            
+            <div class="relative w-full max-w-3xl mt-10 h-64 flex items-center justify-around px-4 md:px-12 poetic-text" style="transition-delay: 0.8s;">
+                <div class="secret-code interactive-el group relative flex flex-col items-center cursor-pointer" data-decoded="YOU ARE MAGIC">
+                    <div class="w-16 h-16 rounded-full border-2 border-green-400 flex items-center justify-center bg-gray-800 hover:bg-gray-700 transition-all transform hover:scale-110 shadow-[0_0_15px_rgba(74,222,128,0.5)] text-green-400 font-mono text-xl">?</div>
+                    <span class="mt-4 text-sm font-body text-green-400 opacity-70 group-hover:opacity-100 transition-opacity">File 01</span>
+                </div>
+                <div class="secret-code interactive-el group relative flex flex-col items-center cursor-pointer" data-decoded="SHINE BRIGHT">
+                    <div class="w-16 h-16 rounded-full border-2 border-blue-400 flex items-center justify-center bg-gray-800 hover:bg-gray-700 transition-all transform hover:scale-110 shadow-[0_0_15px_rgba(96,165,250,0.5)] text-blue-400 font-mono text-xl">#</div>
+                    <span class="mt-4 text-sm font-body text-blue-400 opacity-70 group-hover:opacity-100 transition-opacity">File 02</span>
+                </div>
+                <div class="secret-code interactive-el group relative flex flex-col items-center cursor-pointer" data-decoded="Keep Smiling">
+                    <div class="w-16 h-16 rounded-full border-2 border-purple-400 flex items-center justify-center bg-gray-800 hover:bg-gray-700 transition-all transform hover:scale-110 shadow-[0_0_15px_rgba(192,132,252,0.5)] text-purple-400 font-mono text-xl">!</div>
+                    <span class="mt-4 text-sm font-body text-purple-400 opacity-70 group-hover:opacity-100 transition-opacity">File 03</span>
+                </div>
+            </div>
+            <p id="secret-text" class="text-xl md:text-2xl mt-8 h-16 text-green-400 font-mono transition-all duration-500 opacity-0 translate-y-4 px-4 tracking-widest"></p>
+            <div class="scroll-hint">Tap anywhere to continue</div>
+        </section>
+
+        <section id="page-20" class="page">
+            <h2 class="font-display text-4xl md:text-5xl poetic-text text-gray-800">The Mystery Gift</h2>
+            <div id="gift-box" class="mt-8 poetic-text interactive-el" style="transition-delay: 0.5s;">🎁</div>
+            <div id="bouquet" class="text-9xl mt-8 poetic-text hidden" style="animation: bloom 1s ease-out;">💐</div>
+            <p id="gift-quote" class="text-2xl md:text-3xl mt-4 font-display text-gray-800 opacity-0 transition-opacity duration-1000"></p>
+            <div class="scroll-hint text-gray-600">Tap anywhere to continue</div>
+        </section>
+
+        <section id="page-21" class="page">
+            <h2 class="font-display text-4xl md:text-5xl poetic-text">The Final Door</h2>
+            <div id="final-door" class="mt-12 poetic-text interactive-el" style="transition-delay: 0.5s;"></div>
+            <p class="text-xl md:text-2xl max-w-lg mx-auto mt-8 poetic-text text-white" style="transition-delay: 1s; text-shadow: 0 0 5px #f0e68c;">
+                The greatest journey wasn't through these doors, it was the moment you stepped into the world. Now, unlock the last page.
+            </p>
+            <div class="scroll-hint">Tap to open the final door</div>
+        </section>
+
+        <section id="page-22" class="page">
+            <h1 class="font-display text-6xl md:text-8xl poetic-text" style="text-shadow: 0 0 15px #f0e68c;">Happy 21st Birthday</h1>
+            <p class="text-3xl mt-8 font-display poetic-text text-pink-300" style="transition-delay: 0.5s;">
+                You are the main Charecter of your story, all spot light on you. So keep shining, keep dreaming, keep smiling  and never forget the magic you carry within.
+            </p>
+            <p class="text-3xl mt-8 poetic-text" style="transition-delay: 1s;">✨</p>
+        </section>
+
+    </main>
+
+    <div id="easter-egg-modal" class="">
+        <div class="bg-white text-gray-800 p-8 rounded-lg shadow-2xl max-w-sm mx-4 text-center">
+            <p class="text-xl md:text-2xl font-display">You found it.</p>
+            <p class="text-lg mt-4">Even the smallest light always finds its way.</p>
+            <button id="close-modal-btn" class="mt-6 px-6 py-2 bg-indigo-500 text-white rounded-lg interactive-el hover:bg-indigo-600 transition-colors">Close</button>
+        </div>
+    </div>
+
+
+    <script type="module">
+        const mainContentEl = document.getElementById('mainContent'); 
+        const pages = document.querySelectorAll('.page');
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        const easterEggModal = document.getElementById('easter-egg-modal');
+        let particles = [];
+        let currentPage = 0;
+        let audioInitialized = false;
+        let whisperTimeout; 
+        
+        // Placeholder audio - user can replace string with actual URL
+        const bgMusic = new Audio(''); 
+
+        const pageGradients = {
+            'page-1': 'linear-gradient(135deg, #2c1e3a, #1a1a2e)',
+            'page-2': 'linear-gradient(180deg, #0c0a18, #2a2a4e, #4a3a6a)',
+            'page-3': 'linear-gradient(45deg, #a6c1ee, #f8cdda)',
+            'page-4': 'linear-gradient(135deg, #e0eafc, #cfdef3)',
+            'page-6': 'linear-gradient(180deg, #a1c4fd, #c2e9fb)',
+            'page-7': 'linear-gradient(45deg, #5a3e2b, #8a624a)',
+            'page-8': 'linear-gradient(135deg, #304352, #d7d2cc)',
+            'page-9': 'linear-gradient(180deg, #4b6cb7, #182848)',
+            'page-10': 'linear-gradient(180deg, #1a1c2c 0%, #4a69bd 100%)', 
+            'page-11': 'linear-gradient(180deg, #2b2b3e, #1a1a2e)',
+            'page-12': 'linear-gradient(225deg, #0f2027, #203a43, #2c5364)',
+            'page-13': 'linear-gradient(135deg, #fddb92, #d1fdff)',
+            'page-14': 'linear-gradient(180deg, #232526, #414345)',
+            'page-15': 'linear-gradient(180deg, #fceabb, #f8b500)',
+            'page-16': 'linear-gradient(135deg, #3e5151, #decba4)',
+            'page-17': 'linear-gradient(135deg, #868f96, #596164)',
+            'page-18': 'linear-gradient(45deg, #ff9a9e, #fad0c4)',
+            'page-19': 'linear-gradient(135deg, #373B44, #4286f4)',
+            'page-20': 'linear-gradient(45deg, #f6d365, #fda085)',
+            'page-21': 'linear-gradient(180deg, #00000c, #1a1a3a, #3a3a6a)',
+            'page-22': 'linear-gradient(180deg, #0c0a18, #2a2a4e, #4a3a6a)'
+        };
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class Particle {
+            constructor(x, y, vx, vy, radius, color, life) {
+                this.x = x; this.y = y; this.vx = vx; this.vy = vy;
+                this.radius = radius; this.color = color; this.life = life;
+                this.initialLife = life;
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                if (this.initialLife === Infinity) {
+                    ctx.globalAlpha = 1; 
+                } else {
+                    ctx.globalAlpha = Math.max(0, this.life / this.initialLife);
+                }
+                ctx.fill();
+                ctx.closePath();
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                if (this.life !== Infinity) {
+                    this.life--;
+                }
+            }
+        }
+
+        function clearParticles() { particles = []; }
+
+        function createStars(count = 100) {
+            clearParticles();
+            for (let i = 0; i < count; i++) {
+                const x = Math.random() * canvas.width;
+                const y = Math.random() * canvas.height;
+                const radius = Math.random() * 1.5;
+                particles.push(new Particle(x, y, 0, 0, radius, 'white', Infinity));
+            }
+        }
+        
+        function createRain(count = 100) {
+            clearParticles();
+            for (let i = 0; i < count; i++) {
+                const x = Math.random() * canvas.width;
+                const y = Math.random() * canvas.height - canvas.height;
+                const vy = Math.random() * 4 + 4;
+                particles.push(new Particle(x, y, 0, vy, 1, 'rgba(170, 190, 210, 0.7)', 150));
+            }
+        }
+        
+        function createButterflies(count = 10) {
+            clearParticles();
+            for (let i = 0; i < count; i++) {
+                const x = Math.random() * canvas.width;
+                const y = Math.random() * canvas.height;
+                const vx = (Math.random() - 0.5) * 2;
+                const vy = (Math.random() - 0.5) * 2;
+                const color = `rgba(${Math.floor(Math.random() * 100) + 150}, 200, 255, 0.7)`;
+                particles.push(new Particle(x, y, vx, vy, 3, color, Infinity));
+            }
+        }
+
+        function createConfetti(count = 200) {
+            clearParticles();
+            for (let i = 0; i < count; i++) {
+                const x = Math.random() * canvas.width;
+                const y = -Math.random() * canvas.height;
+                const vx = (Math.random() - 0.5) * 4;
+                const vy = Math.random() * 3 + 2;
+                const color = `hsl(${Math.random() * 360}, 100%, 70%)`;
+                particles.push(new Particle(x, y, vx, vy, Math.random() * 3 + 2, color, 300));
+            }
+        }
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.globalAlpha = 1;
+            
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.draw();
+                p.update();
+                
+                const pageId = pages[currentPage]?.id || '';
+                
+                if (pageId === 'page-10' && p.y > canvas.height) { 
+                    p.y = -p.radius; p.x = Math.random() * canvas.width;
+                }
+                else if (pageId === 'page-13') { 
+                }
+                if (p.life === 0) particles.splice(i, 1);
+            }
+            requestAnimationFrame(animateParticles);
+        }
+
+        function typeLine(el, text, speed) {
+            return new Promise(resolve => {
+                let i = 0;
+                
+                if(el.textContent === text) { resolve(); return; }
+                
+                const typing = setInterval(() => {
+                    if (i < text.length) { el.textContent += text.charAt(i); i++; } 
+                    else { clearInterval(typing); resolve(); }
+                }, speed);
+            });
+        }
+
+        function eraseLine(el, speed) {
+            return new Promise(resolve => {
+                const erasing = setInterval(() => {
+                    if (el.textContent.length > 0) { el.textContent = el.textContent.substring(0, el.textContent.length - 1); } 
+                    else { clearInterval(erasing); resolve(); }
+                }, speed);
+            });
+        }
+
+        
+        const skyMessages = [
+            "You are stardust.", "You are light.", "You are the favorite view.", "You are a beautiful sweet chaos.",
+            "You are a new beginning.", "You are worth watching.", "You are the perfect answer."
+        ];
+        async function animateSkyText() {
+            const el = document.getElementById('sky-message');
+            const finalEl = document.getElementById('sky-final');
+            if (!el || !finalEl) return;
+            if(el.dataset.played === "true") return;
+
+            el.classList.add('typing-cursor');
+            for (let i = 0; i < 6; i++) {
+                await typeLine(el, skyMessages[i], 70);
+                await new Promise(r => setTimeout(r, 800)); 
+                await eraseLine(el, 40);
+                await new Promise(r => setTimeout(r, 300)); 
+            }
+            await typeLine(el, skyMessages[6], 70);
+            el.classList.remove('typing-cursor');
+            finalEl.textContent = "Written on the wind, just for a moment.";
+            finalEl.style.opacity = 1;
+            el.dataset.played = "true";
+        }
+
+        
+        let balloonInterval;
+        function startBalloonGame() {
+            const container = document.getElementById('balloon-container');
+            if(!container) return;
+            
+            clearInterval(balloonInterval);
+            container.innerHTML = ''; 
+            
+            const emojis = ['🎈', '🎉', '✨', '🎁'];
+            
+            balloonInterval = setInterval(() => {
+                const balloon = document.createElement('div');
+                balloon.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+                balloon.classList.add('floating-balloon', 'interactive-el');
+                balloon.style.left = `${Math.random() * 90}%`;
+                balloon.style.animationDuration = `${Math.random() * 4 + 4}s`; 
+                
+                balloon.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    balloon.textContent = '💥';
+                    setTimeout(() => balloon.remove(), 200);
+                    const msg = document.getElementById('balloon-text');
+                    if(msg) msg.textContent = ["Joy", "Smile ", "Fun", "Laugh"][Math.floor(Math.random()*4)];
+                });
+                
+                container.appendChild(balloon);
+                
+                
+                setTimeout(() => {
+                    if(balloon.parentNode) balloon.remove();
+                }, 8000);
+                
+            }, 800);
+        }
+
+        function stopBalloonGame() {
+            clearInterval(balloonInterval);
+            const container = document.getElementById('balloon-container');
+            if(container) container.innerHTML = '';
+        }
+
+        
+        function goToPage(newPageIndex) {
+            if (newPageIndex < 0 || newPageIndex >= pages.length) return;
+            const oldPageIndex = currentPage;
+            if (newPageIndex === oldPageIndex) return; 
+            if (whisperTimeout) clearTimeout(whisperTimeout);
+            
+            
+            if(pages[oldPageIndex].id === 'page-18') stopBalloonGame();
+
+            currentPage = newPageIndex;
+            pages.forEach((page, index) => {
+                page.classList.remove('page-active', 'page-previous');
+                if (index === newPageIndex) {
+                    page.classList.add('page-active');
+                    page.querySelectorAll('.poetic-text').forEach(el => el.classList.remove('visible')); 
+                    setTimeout(() => page.querySelectorAll('.poetic-text').forEach(el => el.classList.add('visible')), 500); 
+                } else if (index === oldPageIndex) {
+                    page.classList.add('page-previous');
+                    page.querySelectorAll('.poetic-text').forEach(el => el.classList.remove('visible'));
+                }
+            });
+            runPageLogic(pages[newPageIndex].id);
+        }
+
+        function runPageLogic(pageId) {
+            clearParticles();
+            if (pageGradients[pageId]) {
+                document.body.style.background = pageGradients[pageId];
+            } else {
+                document.body.style.background = '#0c0a18'; 
+            }
+            
+            switch(pageId) {
+                case 'page-1': createStars(100); break;
+                case 'page-2': createMoonAndStars(); animateStarWhispers(); break;
+                case 'page-3': spawnWishes(); break;
+                case 'page-6':
+                    const skyMessageEl = document.getElementById('sky-message');
+                    if(skyMessageEl) {
+                        if(skyMessageEl.dataset.played !== "true") {
+                            skyMessageEl.textContent = '';
+                            document.getElementById('sky-final').style.opacity = 0; 
+                            animateSkyText();
+                        }
+                    }
+                    break;
+                case 'page-9':
+                    const bridgeText = document.getElementById('bridge-text');
+                    if(bridgeText) { bridgeText.style.opacity = 0; bridgeText.textContent = ''; }
+                    break;
+                case 'page-10':
+                    createRain(150); 
+                    const rainText = document.getElementById('rain-text');
+                    if(rainText) { rainText.style.opacity = 0; rainText.textContent = ''; }
+                    break;
+                case 'page-12':
+                    createStars(200);
+                    const universeText = document.getElementById('universe-text');
+                    if(universeText) { universeText.style.opacity = 0; universeText.textContent = ''; }
+                    break;
+                case 'page-13':
+                    
+                    createStars(50);
+                    const bfText = document.getElementById('butterfly-text');
+                    if(bfText) { bfText.textContent = ''; }
+                    break;
+                case 'page-14':
+                    const poemContainer = document.getElementById('poem-container');
+                    if(poemContainer) poemContainer.innerHTML = '';
+                    poemIndex = 0; 
+                    break;
+                case 'page-15':
+                    
+                    const wText = document.getElementById('window-text');
+                    if(wText) { wText.textContent = "Look closer..."; }
+                    break;
+                case 'page-16':
+                    
+                    const env = document.querySelector('.envelope');
+                    if(env) env.classList.remove('open');
+                    break;
+                case 'page-17':
+                    
+                    break;
+                 case 'page-18':
+                    startBalloonGame();
+                    break;
+                case 'page-19':
+                    const secretText = document.getElementById('secret-text');
+                    if(secretText) { secretText.style.opacity = 0; secretText.textContent = ''; }
+                    break;
+                case 'page-21': createStars(150); break;
+                case 'page-22': createConfetti(200); break;
+                default: break;
+            }
+        }
+        
+        document.getElementById('door-of-light').addEventListener('click', async () => {
+            try {
+                if(bgMusic.src) await bgMusic.play();
+            } catch(e) { console.log("Audio play failed or no source:", e); }
+            
+            const page1 = document.getElementById('page-1');
+            page1.classList.add('page-zooming-out');
+            setTimeout(() => { goToPage(1); page1.classList.remove('page-zooming-out'); }, 1200); 
+        });
+        
+        
+        const starWhisper = document.getElementById('star-whisper');
+        const whispers = ["A whisper of magic...", "A new chapter.", "A universe of possibility.", "A story just beginning.", "The universe aligns."];
+        let whisperIndex = 0;
+        function animateStarWhispers() {
+            if (currentPage !== 1) return; 
+            whisperIndex = (whisperIndex + 1) % whispers.length;
+            if (starWhisper) {
+                starWhisper.style.opacity = 0;
+                setTimeout(() => {
+                    starWhisper.textContent = whispers[whisperIndex];
+                    starWhisper.style.opacity = 1;
+                }, 500); 
+            }
+            whisperTimeout = setTimeout(animateStarWhispers, 3000);
+        }
+        function createMoonAndStars() { createStars(20); if(starWhisper) starWhisper.textContent = whispers[0]; }
+        
+        
+        function spawnWishes() { 
+            const container = document.getElementById('page-3');
+            if (!container) return; 
+            container.querySelectorAll('.wish').forEach(w => w.remove()); 
+            container.querySelectorAll('.text-wish').forEach(w => w.remove()); 
+            const textWishes = [
+                "To climb a mountain", "To see the northern lights", "To become a professional shooter",
+                "To learn a new language", "To become the cure", "To find a quiet moment",
+                "To dance in the rain", "Read a life-changing book", "To feel true peace",
+                "To inspire someone", "World Tour", "To always be curious",
+                "To see the good in people", "To be brave", "To love deeply", "Eat Squid ",
+                "To create something beautiful", "To travel the world", "To find my own magic",
+                "To never stop dreaming", "To draw canvas"
+            ];
+            const emojiSymbols = ['✨', '💖', '🌸', '🌺', '🌟']; 
+            for(let i = 0; i < textWishes.length; i++) {
+                const wish = document.createElement('div');
+                wish.classList.add('text-wish');
+                wish.textContent = textWishes[i];
+                wish.style.left = `${Math.random() * 90 + 5}vw`; 
+                wish.style.top = `${Math.random() * -100 - 50}px`; 
+                const duration = Math.random() * 15 + 15; 
+                const delay = Math.random() * 20; 
+                wish.style.animation = `fallSlowly ${duration}s linear ${delay}s infinite`;
+                wish.style.fontSize = `${Math.random() * 0.5 + 0.8}rem`; 
+                container.appendChild(wish);
+            }
+            for(let i = 0; i < 25; i++) {
+                const wish = document.createElement('div');
+                wish.classList.add('wish');
+                wish.textContent = emojiSymbols[i % emojiSymbols.length];
+                wish.style.left = `${Math.random() * 100}vw`;
+                wish.style.top = `${Math.random() * -100 - 50}px`;
+                const duration = Math.random() * 10 + 10; 
+                const delay = Math.random() * 15; 
+                wish.style.animation = `fallSlowly ${duration}s linear ${delay}s infinite`;
+                wish.style.fontSize = `${Math.random() * 1 + 1}rem`; 
+                wish.style.opacity = `${Math.random() * 0.3 + 0.5}`; 
+                container.appendChild(wish);
+            }
+        }
+        
+        
+        const mirrorText = document.getElementById('mirror-text');
+        const reflections = ["Kindness", "Strength", "Wonder", "A universe within.", "You."];
+        let reflectionIndex = 0;
+        const mirror = document.getElementById('mirror');
+        if (mirror) {
+            mirror.addEventListener('click', () => {
+                reflectionIndex = (reflectionIndex + 1) % reflections.length;
+                if(mirrorText) {
+                    mirrorText.style.opacity = 0;
+                    setTimeout(() => { mirrorText.textContent = reflections[reflectionIndex]; mirrorText.style.opacity = 1; }, 500);
+                }
+            });
+        }
+        
+        
+        const bookContents = [
+            "Your kindness isn't just polite, it is a warmth that heals everyone around you.",
+            "You carry a resilience that makes even the hardest mountains look like stepping stones.",
+            "Your mind is a garden where beautiful ideas are always blooming.",
+            "The way you listen makes people feel truly seen, heard, and understood.",
+            "Your spirit is a rare, beautiful mix of gentle compassion and fierce strength."
+        ];
+
+        document.querySelectorAll('#page-7 .book').forEach((book, index) => {
+            book.addEventListener('click', (e) => {
+                e.stopPropagation(); 
+                
+                document.querySelectorAll('#page-7 .book').forEach(b => {
+                    if(b !== book) {
+                        b.textContent = '';
+                        b.classList.remove('open');
+                    }
+                });
+
+                if (!book.classList.contains('open')) {
+                    book.textContent = bookContents[index % bookContents.length];
+                    book.classList.add('open');
+                } else {
+                    book.textContent = '';
+                    book.classList.remove('open');
+                }
+            });
+        });
+        
+        
+        const clockFace = document.getElementById('clock-face');
+        const clockThought = document.getElementById('clock-thought');
+        const jokes = [
+            "At one, the world is quiet, but her glow is still awake.", 
+            "At two, even the moon pauses, softened by her presence.", 
+            "At three, dreams borrow their colours from her calm.",
+            "At four, the early winds whisper her name like a blessing.", 
+            "At five, the first light rises slowly, as if learning from her grace",
+            "At five, the first light rises slowly, as if learning from her grace", 
+            "At five, the first light rises slowly, as if learning from her grace",
+            "At eight, the hours align, drawn toward her quiet strength.", 
+            "At nine, time itself seems softer, as if shaped by her smile.",
+            "At ten, the world steadies—because her presence feels like balance.", 
+            "At eleven, the day glows brighter, carrying traces of her light.",
+            "At twelve, even time pauses… as if she is the moment worth stopping for." 
+        ];
+        if (clockFace) {
+            clockFace.innerHTML = '';
+            const center = document.createElement('div');
+            center.className = 'absolute top-1/2 left-1/2 w-3 h-3 bg-white rounded-full transform -translate-x-1/2 -translate-y-1/2 shadow-lg z-10 pointer-events-none';
+            clockFace.appendChild(center);
+            const handH = document.createElement('div');
+            handH.className = 'absolute top-1/2 left-1/2 w-1 bg-gray-300 origin-bottom rounded pointer-events-none';
+            handH.style.height = '50px'; handH.style.transform = 'translateX(-50%) translateY(-100%) rotate(140deg)';
+            clockFace.appendChild(handH);
+            const handM = document.createElement('div');
+            handM.className = 'absolute top-1/2 left-1/2 w-1 bg-white origin-bottom rounded pointer-events-none shadow-sm';
+            handM.style.height = '75px'; handM.style.animation = 'handRotate 60s linear infinite'; 
+            clockFace.appendChild(handM);
+            for (let h = 1; h <= 12; h++) {
+                const hourEl = document.createElement('div');
+                hourEl.classList.add('clock-hour', 'interactive-el', 'font-bold');
+                hourEl.textContent = h;
+                const angleDeg = (h * 30) - 90;
+                const angleRad = angleDeg * (Math.PI / 180);
+                const radius = 85; 
+                hourEl.style.left = `calc(50% + ${radius * Math.cos(angleRad)}px)`;
+                hourEl.style.top = `calc(50% + ${radius * Math.sin(angleRad)}px)`;
+                hourEl.style.transform = 'translate(-50%, -50%)'; 
+                hourEl.addEventListener('click', (e) => {
+                    e.stopPropagation(); 
+                    if (clockThought) {
+                        clockThought.style.opacity = 0;
+                        setTimeout(() => { clockThought.textContent = jokes[h - 1]; clockThought.style.opacity = 1; }, 300);
+                    }
+                    hourEl.style.color = '#f0e68c'; hourEl.style.transform = 'translate(-50%, -50%) scale(1.5)';
+                    setTimeout(() => { hourEl.style.color = ''; hourEl.style.transform = 'translate(-50%, -50%) scale(1)'; }, 300);
+                });
+                clockFace.appendChild(hourEl);
+            }
+        }
+        
+        
+        const bridgeText = document.getElementById('bridge-text');
+        document.querySelectorAll('.bridge-stone').forEach(stone => {
+            stone.addEventListener('click', (e) => {
+                e.stopPropagation(); 
+                const msg = stone.getAttribute('data-msg');
+                if(bridgeText) {
+                    bridgeText.style.opacity = 0;
+                    bridgeText.style.transform = "translateY(10px)";
+                    setTimeout(() => { bridgeText.textContent = msg; bridgeText.style.opacity = 1; bridgeText.style.transform = "translateY(0)"; }, 300);
+                }
+            });
+        });
+
+        const rainText = document.getElementById('rain-text');
+        document.querySelectorAll('.rain-drop').forEach(drop => {
+            drop.addEventListener('click', (e) => {
+                e.stopPropagation(); 
+                const msg = drop.getAttribute('data-msg');
+                if(rainText) {
+                    rainText.style.opacity = 0;
+                    rainText.style.transform = "translateY(10px)";
+                    setTimeout(() => { rainText.textContent = msg; rainText.style.opacity = 1; rainText.style.transform = "translateY(0)"; }, 300);
+                }
+            });
+        });
+        
+        const universeText = document.getElementById('universe-text');
+        document.querySelectorAll('.cosmic-body').forEach(body => {
+            body.addEventListener('click', (e) => {
+                e.stopPropagation(); 
+                const msg = body.getAttribute('data-msg');
+                if(universeText) {
+                    universeText.style.opacity = 0;
+                    universeText.style.transform = "translateY(10px)";
+                    setTimeout(() => { universeText.textContent = msg; universeText.style.opacity = 1; universeText.style.transform = "translateY(0)"; }, 300);
+                }
+            });
+        });
+        
+        const flyingButterfly = document.getElementById('flying-butterfly');
+        const butterflyMessages = ["Growth", "Grace", "Effect", "Transformation", "Freedom"];
+        if(flyingButterfly) {
+            flyingButterfly.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const bfText = document.getElementById('butterfly-text');
+                if(bfText) {
+                    const msg = butterflyMessages[Math.floor(Math.random() * butterflyMessages.length)];
+                    bfText.textContent = msg;
+                    bfText.style.opacity = 1;
+                    
+                    const currentDuration = parseFloat(getComputedStyle(flyingButterfly).animationDuration);
+                    if(currentDuration > 2) flyingButterfly.style.animationDuration = (currentDuration - 2) + 's';
+                }
+            });
+        }
+
+        const page13Next = document.getElementById('page-13-next');
+        if(page13Next) {
+            page13Next.addEventListener('click', (e) => {
+                e.stopPropagation();
+                goToPage(currentPage + 1);
+            });
+        }
+        
+        const silentPoemLines = ["You are, As pretty as a picture hanging from a fixture,", "Strong like a family, strong as evryone wanna be,", "Bright as day, as light as air,", "As hard as nails, as grand as a universe."];
+        let poemIndex = 0;
+        let isTypingPoem = false; 
+        const quillBtn = document.getElementById('quill-btn');
+        if(quillBtn) {
+            quillBtn.addEventListener('click', async (e) => {
+                 e.stopPropagation();
+                 if (isTypingPoem) return; 
+                 if(poemIndex < silentPoemLines.length) {
+                     isTypingPoem = true; 
+                     const line = document.createElement('p');
+                     line.textContent = ''; 
+                     line.className = "poem-line text-xl md:text-2xl text-white font-display min-h-[2rem]"; 
+                     line.classList.add('typing-cursor');
+                     document.getElementById('poem-container').appendChild(line);
+                     line.scrollIntoView({ behavior: "smooth", block: "end" });
+                     await typeLine(line, silentPoemLines[poemIndex], 50);
+                     line.classList.remove('typing-cursor');
+                     poemIndex++;
+                     isTypingPoem = false; 
+                 }
+            });
+        }
+        
+        const envelopeContainer = document.getElementById('letter-envelope');
+        if(envelopeContainer) {
+            envelopeContainer.addEventListener('click', (e) => {
+                e.stopPropagation();
+                document.querySelector('.envelope').classList.toggle('open');
+            });
+        }
+        
+        let currentCompassRotation = 0; 
+        const compass = document.getElementById('compass');
+        if(compass) {
+            compass.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const needle = document.getElementById('compass-needle');
+                const mapText = document.getElementById('map-text');
+                
+                
+                const randomSpin = Math.floor(Math.random() * 720 + 360);
+                currentCompassRotation += randomSpin;
+                
+                
+                const remainder = currentCompassRotation % 90;
+                if(remainder !== 0) {
+                    currentCompassRotation += (90 - remainder);
+                }
+                
+                needle.style.transform = `translate(-50%, -50%) rotate(${currentCompassRotation}deg)`;
+                
+                setTimeout(() => {
+                    const normalized = currentCompassRotation % 360;
+                    let direction = "";
+                    
+                    if (normalized === 0 || normalized === 360) direction = "North: Follow your own star.";
+                    else if (normalized === 90) direction = "East: New beginnings await.";
+                    else if (normalized === 180) direction = "South: Warmth and passion.";
+                    else if (normalized === 270) direction = "West: Rest and reflection.";
+                    else direction = "North: Follow your own star."; 
+                    
+                    if(mapText) mapText.textContent = direction;
+                }, 2500); 
+            });
+        }
+
+        const secretText = document.getElementById('secret-text');
+        document.querySelectorAll('.secret-code').forEach(el => {
+            el.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const msg = el.getAttribute('data-decoded');
+                if(secretText) {
+                    secretText.style.opacity = 0;
+                    secretText.style.transform = "translateY(10px)";
+                    setTimeout(() => { secretText.textContent = msg; secretText.style.opacity = 1; secretText.style.transform = "translateY(0)"; }, 300);
+                }
+            });
+        });
+
+        const page10 = document.getElementById('page-10');
+        if (page10) {
+            page10.addEventListener('click', (e) => {
+                if (e.target.closest('.interactive-el')) return; 
+                const rainWord = document.createElement('div');
+                rainWord.textContent = ['Peace', 'Clarity', 'Calm', 'Hope'][Math.floor(Math.random() * 4)];
+                rainWord.className = 'absolute text-lg text-white opacity-0';
+                rainWord.style.left = `${e.clientX}px`;
+                rainWord.style.top = `${e.clientY}px`;
+                rainWord.style.animation = 'fadeOut 2s forwards';
+                const container = document.getElementById('rain-word-container');
+                if (container) { container.appendChild(rainWord); }
+                setTimeout(() => rainWord.remove(), 2000);
+            });
+        }
+        
+        const giftBox = document.getElementById('gift-box');
+        const giftQuote = document.getElementById('gift-quote');
+        const bouquet = document.getElementById('bouquet');
+        if (giftBox) {
+            giftBox.addEventListener('click', () => {
+                giftBox.style.display = 'none';
+                if (bouquet) { bouquet.classList.remove('hidden'); }
+                if (giftQuote) { giftQuote.textContent = "The gift of the present moment."; giftQuote.style.opacity = 1; }
+                for (let i = 0; i < 50; i++) {
+                    const x = canvas.width / 2; const y = canvas.height / 2;
+                    const vx = (Math.random() - 0.5) * 10; const vy = (Math.random() - 0.5) * 10;
+                    const color = `hsl(${Math.random() * 360}, 100%, 70%)`;
+                    particles.push(new Particle(x, y, vx, vy, Math.random() * 3 + 2, color, 100));
+                }
+            }, { once: true });
+        }
+
+        const secretMessage = document.getElementById('secret-message');
+        if (secretMessage) {
+            secretMessage.addEventListener('click', () => {
+                const current = secretMessage.textContent.trim();
+                const decoded = secretMessage.dataset.decoded;
+                const scrambled = secretMessage.dataset.scrambled;
+                secretMessage.textContent = (current === decoded) ? scrambled : decoded;
+                secretMessage.style.color = (current === decoded) ? '#4286f4' : '#00ff7f';
+                secretMessage.style.textShadow = (current === decoded) ? '0 0 10px #4286f4' : '0 0 10px #00ff7f';
+            });
+        }
+
+        const finalDoor = document.getElementById('final-door');
+        if (finalDoor) {
+            finalDoor.addEventListener('click', (e) => { 
+                e.stopPropagation();
+                const page21 = document.getElementById('page-21');
+                page21.classList.add('page-zooming-out');
+                setTimeout(() => {
+                    goToPage(20); 
+                    page21.classList.remove('page-zooming-out');
+                }, 1200);
+            });
+        }
+
+        const heartBtn = document.getElementById('glowing-heart-btn');
+        if (heartBtn) {
+            heartBtn.addEventListener('click', (e) => { 
+                e.stopPropagation();
+                if(easterEggModal) easterEggModal.classList.add('visible'); 
+            });
+        }
+        const closeBtn = document.getElementById('close-modal-btn');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', (e) => { 
+                e.stopPropagation();
+                if(easterEggModal) easterEggModal.classList.remove('visible'); 
+            });
+        }
+
+        if (mainContentEl) { 
+            mainContentEl.addEventListener('click', (e) => {
+                // Added check for clock-face to prevent navigation
+                if (e.target.closest('.interactive-el') || 
+                    e.target.closest('#navToggle') || 
+                    e.target.closest('.nav-panel') ||
+                    e.target.closest('#clock-face')) {
+                    return;
+                }
+                
+                if (pages[currentPage].id === 'page-13') {
+                    return; 
+                }
+
+                if (pages[currentPage].id === 'page-18') {
+                    return; 
+                }
+
+                if (currentPage < pages.length - 1) {
+                    goToPage(currentPage + 1);
+                }
+            });
+        }
+        
+        const page18Next = document.getElementById('page-18-next');
+        if(page18Next) {
+            page18Next.addEventListener('click', (e) => {
+                e.stopPropagation();
+                goToPage(currentPage + 1);
+            });
+        }
+
+        pages.forEach((page, index) => {
+            page.querySelectorAll('.poetic-text').forEach(el => el.classList.remove('visible'));
+            page.classList.remove('page-active', 'page-previous');
+            if (index === 0) {
+                page.classList.add('page-active'); 
+                page.querySelectorAll('.poetic-text').forEach(el => el.classList.add('visible'));
+            }
+        });
+        runPageLogic('page-1');
+        animateParticles(); 
+
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const mainContent = document.getElementById('mainContent'); 
+            const topNav = document.getElementById('topNav');
+            const bottomNav = document.getElementById('bottomNav');
+            const leftNav = document.getElementById('leftNav');
+            const rightNav = document.getElementById('rightNav');
+            const navToggle = document.getElementById('navToggle');
+            const navToggleIcon = document.getElementById('navToggleIcon');
+            const navToggleX = document.getElementById('navToggleX');
+            let areNavsOpen = false;
+            
+            function openAllNavs() {
+                if (!mainContent || !topNav || !bottomNav || !leftNav || !rightNav || !navToggleIcon || !navToggleX || !navToggle) return;
+                topNav.classList.remove('-translate-y-full'); bottomNav.classList.remove('translate-y-full');
+                leftNav.classList.remove('-translate-x-full'); rightNav.classList.remove('translate-x-full');
+                navToggleIcon.classList.add('hidden'); navToggleX.classList.remove('hidden');
+                areNavsOpen = true;
+            }
+            function closeAllNavs() {
+                if (!mainContent || !topNav || !bottomNav || !leftNav || !rightNav || !navToggleIcon || !navToggleX || !navToggle) return;
+                topNav.classList.add('-translate-y-full'); bottomNav.classList.add('translate-y-full');
+                leftNav.classList.add('-translate-x-full'); rightNav.classList.add('translate-x-full');
+                navToggleIcon.classList.remove('hidden'); navToggleX.classList.add('hidden');
+                areNavsOpen = false;
+            }
+            function toggleAllNavs() {
+                if (areNavsOpen) { closeAllNavs(); } else { openAllNavs(); }
+            }
+            if(navToggle) {
+                navToggle.addEventListener('click', (e) => { e.stopPropagation(); toggleAllNavs(); });
+            }
+            if(mainContent) {
+                mainContent.addEventListener('click', (e) => {
+                    if (areNavsOpen && !e.target.closest('.interactive-el')) { closeAllNavs(); }
+                });
+            }
+            document.querySelectorAll('.nav-panel .nav-link').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    const targetHref = e.currentTarget.getAttribute('href');
+                    if (targetHref.startsWith('#')) { e.preventDefault(); }
+                    if (areNavsOpen) { setTimeout(closeAllNavs, 100); }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
