@@ -1,0 +1,2561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>21 Doors — A Journey Through Her Universe</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Poppins:wght@300;400;600&family=Gochi+Hand&display=swap" rel="stylesheet">
+
+    <!-- Three.js is NOT loaded up front. This import map only tells the browser where to find it;
+         the module is fetched on demand (see "SOLAR SYSTEM" in the script) shortly before page 12.
+         Pinned to r160 so the shaders and post-processing addons stay compatible. -->
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+        }
+    }
+    </script>
+
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden; 
+            background-color: #0c0a18;
+        }
+
+        .font-display { font-family: 'Great Vibes', cursive; }
+        .font-body { font-family: 'Poppins', sans-serif; }
+        .festive-text { font-family: 'Gochi Hand', cursive; }
+
+        .nav-panel, #mainContent, #navToggleIcon, #navToggleX, #navToggle {
+            transition: all 0.3s ease-in-out;
+        }
+        
+        #mainContent, .nav-panel {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        #mainContent::-webkit-scrollbar,
+        .nav-panel::-webkit-scrollbar {
+            display: none;
+        }
+
+        #mainContent {
+            width: 100vw;
+            height: 100vh;
+            position: absolute; 
+            inset: 0;
+            overflow: hidden; 
+            z-index: 10;
+        }
+
+        .page {
+            width: 100vw;
+            height: 100vh;
+            position: absolute; 
+            top: 0; 
+            left: 0; 
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 2rem;
+            box-sizing: border-box; 
+            color: white;
+            overflow: hidden;
+            z-index: 1;
+            /* visibility flips to hidden only AFTER the slide-out finishes (1s), so inactive pages
+               can't take keyboard focus (which would scroll this overflow:hidden container sideways)
+               and aren't read by screen readers. */
+            transition: transform 1s ease-in-out, opacity 1s ease-in-out, visibility 0s linear 1s;
+            visibility: hidden;
+            opacity: 0;
+            transform: translateX(100vw);
+            background: transparent !important; 
+            pointer-events: none; 
+        }
+
+        .page-active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(0);
+            z-index: 2;
+            pointer-events: auto;
+            transition: transform 1s ease-in-out, opacity 1s ease-in-out, visibility 0s linear 0s;
+        }
+        .page-previous {
+            opacity: 0;
+            transform: translateX(-100vw);
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .poetic-text {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 1.5s ease-out, transform 1.2s ease-out;
+            transition-delay: 0.5s; 
+        }
+        .poetic-text.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.05); }
+        }
+        @keyframes float {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+            100% { transform: translateY(0); }
+        }
+        @keyframes zoomOut {
+            from { transform: scale(1); opacity: 1; }
+            to { transform: scale(8); opacity: 0; }
+        }
+        .page-zooming-out {
+            animation: zoomOut 1.2s ease-in forwards; 
+            z-index: 3; 
+        }
+        @keyframes fallSlowly {
+            from { transform: translateY(0); }
+            to { transform: translateY(110vh); }
+        }
+        @keyframes typewriter {
+            from { width: 0; }
+            to { width: 100%; }
+        }
+        @keyframes blinkCaret {
+            from, to { border-color: transparent; }
+            50% { border-color: white; }
+        }
+        .typewriter {
+            display: inline-block;
+            overflow: hidden;
+            white-space: nowrap;
+            border-right: .15em solid white;
+            animation: typewriter 3s steps(30, end) 1s forwards,
+                       blinkCaret .75s step-end infinite;
+            width: 0;
+        }
+
+        .typing-cursor {
+            border-right: .15em solid white;
+            animation: blinkCaret .75s step-end infinite;
+        }
+        
+        .poem-line {
+            display: inline-block;
+        }
+
+        #door-of-light, #final-door {
+            border: 2px solid #f0e68c;
+            border-radius: 5px;
+            box-shadow: 0 0 15px 5px #f0e68c, 0 0 30px 10px #f0e68c inset;
+            cursor: pointer;
+            transition: all 0.5s ease;
+        }
+        #door-of-light {
+            width: 80px; height: 120px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        #door-of-light:hover {
+            box-shadow: 0 0 25px 10px #fff, 0 0 40px 15px #fff inset;
+            transform: scale(1.05);
+            background: rgba(255, 255, 255, 0.3);
+        }
+        #final-door {
+            width: 100px; height: 150px;
+            border-radius: 50% 50% 5px 5px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        #final-door:hover {
+            box-shadow: 0 0 30px 12px #fff, 0 0 50px 20px #fff inset;
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .wish, .text-wish {
+            position: absolute;
+            will-change: transform;
+        }
+        .wish {
+            color: white; 
+            text-shadow: 0 0 8px rgba(255, 255, 255, 0.7);
+            z-index: 5;
+        }
+        .text-wish {
+            color: rgba(60, 40, 30, 0.6); 
+            font-family: 'Poppins', sans-serif;
+            font-weight: 300;
+            font-style: italic;
+            text-shadow: 0 0 3px rgba(255, 255, 255, 0.5); 
+            z-index: 6; 
+        }
+
+        #mirror {
+            width: 250px;
+            height: 350px;
+            border: 8px solid silver;
+            border-radius: 150px / 100px;
+            background: linear-gradient(135deg, #e0eafc 20%, #cfdef3 80%);
+            box-shadow: 0 0 20px 5px rgba(255, 255, 255, 0.7), 0 0 30px 10px rgba(200, 200, 255, 0.5) inset;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        #mirror-text {
+            color: #304352;
+        }
+        
+        .book {
+            width: 100px;
+            height: 140px;
+            background-color: #8B4513;
+            border: 2px solid #D2B48C;
+            border-radius: 5px 2px 2px 5px;
+            margin: 1rem;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 8px;
+            font-size: 0.65rem;
+            color: #f0e68c;
+            overflow: hidden;
+            font-family: 'Poppins', sans-serif;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+            line-height: 1.4;
+        }
+        .book:nth-child(1) { transform: rotate(-5deg); margin-top: 10px; }
+        .book:nth-child(2) { transform: rotate(3deg); margin-top: -5px; }
+        .book:nth-child(3) { transform: rotate(-2deg); }
+        .book:nth-child(4) { transform: rotate(6deg); margin-top: 15px; }
+        .book:nth-child(5) { transform: rotate(-4deg); margin-top: 5px; }
+        .book:hover { transform: scale(1.1) rotate(0deg) !important; z-index: 10; }
+        .book.open { 
+            transform: scale(1.2) rotate(0deg) !important; 
+            z-index: 20; 
+            box-shadow: 0 0 15px rgba(255,255,255,0.3);
+            border-color: #fff;
+            background-color: #5a3e2b;
+        }
+
+        #clock-face {
+            width: 200px; height: 200px;
+            border: 5px solid white;
+            border-radius: 50%;
+            position: relative;
+            box-shadow: 0 0 15px rgba(255,255,255,0.5);
+        }
+        @keyframes handRotate {
+            0% { transform: translateX(-50%) translateY(-100%) rotate(0deg); }
+            100% { transform: translateX(-50%) translateY(-100%) rotate(360deg); }
+        }
+        .clock-hour {
+            position: absolute; font-size: 1.2rem; cursor: pointer;
+            transform-origin: center; transition: transform 0.3s ease;
+        }
+        .clock-hour:hover { transform: scale(1.3); color: #f0e68c; }
+        
+        #gift-box { font-size: 6rem; cursor: pointer; animation: pulse 2s infinite; }
+        
+        #secret-message {
+            font-family: monospace; font-size: 1.5rem; letter-spacing: 4px;
+            cursor: pointer; color: #4286f4; text-shadow: 0 0 10px #4286f4;
+        }
+        
+        #glowing-heart-btn {
+            position: absolute; bottom: 30px; right: 30px;
+            font-size: 1.5rem; color: #ff9a9e; animation: pulse 1.5s infinite;
+            cursor: pointer; z-index: 100;
+        }
+        
+        #easter-egg-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(10px);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 999; opacity: 0; pointer-events: none; visibility: hidden;
+            transition: opacity 0.5s ease, visibility 0s linear 0.5s;
+        }
+        #easter-egg-modal.visible { opacity: 1; pointer-events: auto; visibility: visible; transition-delay: 0s; }
+
+        .scroll-hint {
+            position: absolute; bottom: 20px; left: 0; width: 100%; 
+            text-align: center; font-size: 0.8rem; color: rgba(255, 255, 255, 0.5);
+            animation: pulse 2s infinite; z-index: 10;
+        }
+
+        .poetic-nav-style {
+            background: rgba(12, 10, 24, 0.9); backdrop-filter: blur(8px);
+            border: 1px solid rgba(240, 230, 140, 0.3);
+            box-shadow: 0 0 10px rgba(240, 230, 140, 0.15); color: white; 
+        }
+        .poetic-nav-style a.nav-link {
+            color: white; transition: background-color 0.2s ease, color 0.2s ease;
+        }
+        .poetic-nav-style a.nav-link:hover {
+            background-color: rgba(240, 230, 140, 0.1); color: #f0e68c; 
+        }
+
+        #particle-canvas {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: 0; pointer-events: none;
+        }
+
+        .rain-glass-panel {
+            background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 20px;
+            padding: 2rem; box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+        @keyframes liquid-morph {
+            0% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
+            50% { border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%; }
+            100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
+        }
+        .liquid-orb {
+            animation: liquid-morph 8s ease-in-out infinite;
+            background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.1), rgba(255,255,255,0.05) 60%, rgba(255,255,255,0));
+            border: 1px solid rgba(255,255,255,0.3);
+            box-shadow: inset 0 0 20px rgba(255,255,255,0.2), 0 0 25px rgba(100, 200, 255, 0.6);
+            transition: all 0.3s ease;
+        }
+        .liquid-orb:hover {
+            transform: scale(1.15);
+            box-shadow: inset 0 0 30px rgba(255,255,255,0.4), 0 0 40px rgba(100, 230, 255, 0.8);
+            background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.2), rgba(255,255,255,0.1) 60%, rgba(255,255,255,0));
+        }
+        .css-rain-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 0;
+            background-image: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0.2) 30%, rgba(255,255,255,0));
+            background-size: 2px 80vh; animation: cssRain 1s linear infinite; opacity: 0.1;
+        }
+        @keyframes cssRain {
+            0% { background-position: 0% 0%; }
+            100% { background-position: 0% 100%; }
+        }
+
+        /* =====================================================================
+           PAGE 12 — "The Voice of the Universe" (Three.js scene + layout)
+           The WebGL canvas lives in #solar-stage: fixed, BEHIND #mainContent (z 5 < 10)
+           and pointer-events:none, so it can never block buttons or page navigation.
+           ===================================================================== */
+        #solar-stage {
+            position: fixed; inset: 0; z-index: 5; pointer-events: none;
+            background: #02030a;
+            opacity: 0; visibility: hidden;
+            transition: opacity 1.4s ease, visibility 0s linear 1.4s;
+        }
+        #solar-stage.is-live { opacity: 1; visibility: visible; transition: opacity 1.4s ease, visibility 0s; }
+        #solar-stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; pointer-events: none; }
+
+        .sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+        #page-12 { align-items: center; justify-content: flex-end; padding-bottom: clamp(3.5rem, 9vh, 5rem); }
+        /* Soft scrim keeps the copy readable and visually separate from the planets. */
+        #page-12::before {
+            content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none;
+            background: linear-gradient(0deg, rgba(2, 4, 12, 0.88) 0%, rgba(2, 4, 12, 0.62) 40%, rgba(2, 4, 12, 0) 66%);
+        }
+        #page-12 .solar-copy { width: min(26rem, 100%); position: relative; }
+        #page-12 #universe-text { height: auto; min-height: 4.5rem; }
+        .solar-hint { margin-top: 0.9rem; font-size: 1rem; color: rgba(255, 255, 255, 0.78); }
+        .solar-chips { display: flex; flex-wrap: wrap; gap: 0.6rem; justify-content: center; margin-top: 1.1rem; }
+        .solar-chip {
+            display: inline-flex; align-items: center; gap: 0.55rem;
+            padding: 0.55rem 1.05rem 0.55rem 0.7rem; font: inherit; font-size: 0.9rem; color: #fff;
+            background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.22);
+            border-radius: 999px; cursor: pointer; -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+            transition: background 0.2s, border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+        }
+        .solar-chip:hover, .solar-chip:focus-visible, .solar-chip[aria-pressed="true"] {
+            background: rgba(255, 255, 255, 0.18); border-color: #f0e68c; transform: translateY(-2px);
+            outline: none; box-shadow: 0 0 18px rgba(240, 230, 140, 0.25);
+        }
+        .chip-dot { width: 18px; height: 18px; border-radius: 50%; flex: none; }
+        .chip-sun   { background: radial-gradient(circle at 35% 35%, #fff7c4, #ffb02e 55%, #e8620c); box-shadow: 0 0 10px rgba(255, 170, 50, 0.8); }
+        .chip-earth { background: radial-gradient(circle at 35% 30%, #8fd0ff, #2f6fd0 50%, #0c2c66); box-shadow: 0 0 8px rgba(90, 160, 255, 0.6); }
+        .chip-moon  { background: radial-gradient(circle at 35% 30%, #f1f1f1, #a5a5ab 55%, #55555c); box-shadow: 0 0 6px rgba(220, 220, 230, 0.4); }
+        .solar-loading {
+            position: absolute; left: 50%; top: 26%; transform: translateX(-50%); margin: 0;
+            font-size: 0.95rem; letter-spacing: 0.12em; color: rgba(255, 255, 255, 0.7);
+            animation: solarFade 2s ease-in-out infinite; pointer-events: none;
+        }
+        .solar-loading[hidden] { display: none; }
+        @keyframes solarFade { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+        @media (min-width: 900px) {
+            /* Text sits bottom-left; the Sun glows in the upper-left, Earth and Moon on the right. */
+            #page-12 { align-items: flex-start; justify-content: flex-end; text-align: left; padding: 2rem clamp(2rem, 6vw, 7rem) clamp(3rem, 9vh, 5.5rem); }
+            #page-12::before { background: radial-gradient(ellipse 55% 62% at 0% 100%, rgba(2, 4, 12, 0.9) 0%, rgba(2, 4, 12, 0.66) 48%, rgba(2, 4, 12, 0) 100%); }
+            .solar-chips { justify-content: flex-start; }
+            .solar-loading { left: auto; right: 22vw; top: 45%; transform: translateY(-50%); }
+        }
+
+        /* Lighter fallback: pure CSS, used when WebGL is unavailable/too slow or ?solar=lite.
+           No emoji — gradient-shaded spheres. */
+        #solar-stage.is-lite { background: radial-gradient(ellipse at 70% 36%, #0b1630 0%, #04060f 62%, #010208 100%); }
+        .solar-fallback { position: absolute; inset: 0; display: none; }
+        #solar-stage.is-lite .solar-fallback { display: block; }
+        .sf-sun {
+            position: absolute; left: -9vmin; top: 6%; width: 36vmin; height: 36vmin; border-radius: 50%;
+            background: radial-gradient(circle, #fff6c8 0%, #ffd36a 30%, #ff9a2e 58%, #e8620c 100%);
+            box-shadow: 0 0 10vmin 4vmin rgba(255, 150, 50, 0.38);
+        }
+        .sf-system { position: absolute; left: 68%; top: 48%; width: 0; height: 0; }
+        .sf-earth {
+            position: absolute; width: 24vmin; height: 24vmin; margin: -12vmin 0 0 -12vmin; border-radius: 50%;
+            background:
+                radial-gradient(ellipse 30% 22% at 36% 40%, rgba(80, 165, 95, 0.9), transparent 72%),
+                radial-gradient(ellipse 22% 28% at 66% 62%, rgba(95, 155, 85, 0.85), transparent 72%),
+                radial-gradient(circle at 28% 32%, #6fb7ff 0%, #2a68c8 38%, #123a7a 64%, #071a3a 100%);
+            box-shadow: inset -3.2vmin -2vmin 5vmin rgba(0, 0, 10, 0.78), 0 0 4vmin rgba(90, 160, 255, 0.45);
+        }
+        .sf-moon-orbit { position: absolute; left: 0; top: 0; width: 0; height: 0; animation: sfOrbit 28s linear infinite; }
+        .sf-moon {
+            position: absolute; width: 6vmin; height: 6vmin; left: 19vmin; top: -3vmin; border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #ececee, #9b9ba1 55%, #4a4a52);
+            box-shadow: inset -1vmin -1vmin 2vmin rgba(0, 0, 0, 0.6);
+        }
+        @keyframes sfOrbit { to { transform: rotate(360deg); } }
+        @media (max-width: 899px) { .sf-system { left: 50%; top: 27%; } .sf-sun { left: -14vmin; top: 2%; width: 30vmin; height: 30vmin; } }
+
+        /* =====================================================================
+           PERSONALIZATION — opening screen, avatar, portrait
+           ===================================================================== */
+        #intro-screen {
+            position: fixed; inset: 0; z-index: 1000; display: flex; align-items: flex-start; justify-content: center;
+            padding: 1.25rem; box-sizing: border-box; overflow-y: auto; color: #fff;
+            background: radial-gradient(ellipse at 50% 28%, rgba(52, 36, 70, 0.84), rgba(12, 10, 24, 0.95) 72%);
+            -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+            transition: opacity 0.9s ease;
+        }
+        #intro-screen[hidden] { display: none; }
+        #intro-screen.is-leaving { opacity: 0; pointer-events: none; }
+        .intro-card {
+            width: min(27rem, 100%); margin: auto; padding: 2rem 1.75rem 1.5rem; text-align: center; border-radius: 22px;
+            background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(240, 230, 140, 0.28);
+            box-shadow: 0 12px 50px rgba(0, 0, 0, 0.5), 0 0 40px rgba(240, 230, 140, 0.08) inset;
+            animation: introRise 1s ease-out both;
+        }
+        @keyframes introRise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
+        .intro-title { font-family: 'Great Vibes', cursive; font-size: clamp(2.3rem, 8vw, 3.1rem); line-height: 1.1; text-shadow: 0 0 15px #f0e68c; margin: 0; }
+        .intro-sub { margin: 0.6rem 0 1.4rem; color: rgba(255, 255, 255, 0.75); font-size: 0.95rem; }
+        .intro-field { text-align: left; }
+        .intro-field label { display: block; font-size: 0.78rem; letter-spacing: 0.1em; text-transform: uppercase; color: #f0e68c; margin-bottom: 0.4rem; }
+        .intro-field input {
+            width: 100%; box-sizing: border-box; padding: 0.8rem 1rem; font: inherit; font-size: 1.05rem; color: #fff;
+            background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.25); border-radius: 12px; outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .intro-field input::placeholder { color: rgba(255, 255, 255, 0.4); }
+        .intro-field input:focus { border-color: #f0e68c; box-shadow: 0 0 0 3px rgba(240, 230, 140, 0.2); }
+        .intro-field input[aria-invalid="true"] { border-color: #ff8a8a; }
+        .intro-msg { min-height: 1.2rem; margin: 0.35rem 0 0; font-size: 0.8rem; color: #ffb3b3; text-align: left; }
+        .intro-photo { margin-top: 0.8rem; display: flex; flex-direction: column; align-items: center; }
+        .intro-photo .intro-msg { text-align: center; }
+        .intro-avatar {
+            position: relative; width: 116px; height: 116px; padding: 0; border-radius: 50%; cursor: pointer; overflow: hidden;
+            border: 2px dashed rgba(240, 230, 140, 0.6); background: rgba(255, 255, 255, 0.05);
+            display: flex; align-items: center; justify-content: center; color: rgba(240, 230, 140, 0.85);
+            transition: transform 0.25s, box-shadow 0.25s, border-color 0.25s;
+        }
+        .intro-avatar:hover, .intro-avatar:focus-visible { transform: scale(1.04); box-shadow: 0 0 22px rgba(240, 230, 140, 0.35); outline: none; }
+        .intro-avatar.has-photo { border-style: solid; border-color: #f0e68c; box-shadow: 0 0 22px rgba(240, 230, 140, 0.3); }
+        .intro-avatar.is-dragover { border-color: #fff; box-shadow: 0 0 26px rgba(255, 255, 255, 0.5); }
+        .intro-avatar img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+        .intro-avatar img[hidden] { display: none; }
+        .intro-avatar svg { width: 44px; height: 44px; }
+        .intro-actions { display: flex; gap: 1rem; margin-top: 0.6rem; min-height: 1.5rem; }
+        .intro-link { background: none; border: none; padding: 0.15rem 0.25rem; font: inherit; font-size: 0.9rem; color: #f0e68c; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+        .intro-link:hover, .intro-link:focus-visible { color: #fff; outline: none; }
+        .intro-link[hidden] { display: none; }
+        .intro-note { margin: 0.2rem 0 0; font-size: 0.75rem; color: rgba(255, 255, 255, 0.55); }
+        .intro-begin {
+            margin-top: 1.3rem; width: 100%; padding: 0.9rem 1.2rem; font: inherit; font-weight: 600; letter-spacing: 0.04em; color: #1a1530;
+            background: linear-gradient(135deg, #f6ecaa, #f0e68c 50%, #e4c76a); border: none; border-radius: 999px; cursor: pointer;
+            box-shadow: 0 0 22px rgba(240, 230, 140, 0.35); transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .intro-begin:hover, .intro-begin:focus-visible { transform: translateY(-1px) scale(1.01); box-shadow: 0 0 32px rgba(240, 230, 140, 0.55); outline: none; }
+
+        .visitor-name-accent { color: #f0e68c; }
+        .visitor-avatar, .final-portrait {
+            border-radius: 50%; object-fit: cover; border: 2px solid #f0e68c; box-shadow: 0 0 22px rgba(240, 230, 140, 0.5);
+        }
+        .visitor-avatar { width: 72px; height: 72px; margin-bottom: 1rem; }
+        .final-portrait { width: clamp(84px, 16vh, 132px); height: clamp(84px, 16vh, 132px); margin-bottom: 1rem; }
+
+        @media (prefers-reduced-motion: reduce) {
+            .intro-card { animation: none; }
+            #intro-screen { transition-duration: 0.01s; }
+            #solar-stage, #solar-stage.is-live { transition-duration: 0.4s; }
+            .sf-moon-orbit, .solar-loading { animation: none; }
+        }
+
+        @keyframes flyAround {
+            0% { left: 10%; top: 20%; transform: rotate(10deg) scale(1); }
+            25% { left: 80%; top: 15%; transform: rotate(-10deg) scale(0.8); }
+            50% { left: 60%; top: 70%; transform: rotate(5deg) scale(1.1); }
+            75% { left: 20%; top: 60%; transform: rotate(-15deg) scale(0.9); }
+            100% { left: 10%; top: 20%; transform: rotate(10deg) scale(1); }
+        }
+        @keyframes sway { 0%, 100% { transform: rotate(-5deg); } 50% { transform: rotate(5deg); } }
+        .animate-sway { animation: sway 3s ease-in-out infinite; transform-origin: bottom center; }
+
+        .flying-butterfly {
+            position: absolute;
+            font-size: 4rem;
+            cursor: pointer;
+            animation: flyAround 12s linear infinite;
+            transition: transform 0.2s;
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
+            z-index: 50; 
+        }
+        .flying-butterfly:active { transform: scale(0.5); }
+
+        .window-frame {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+            width: 300px; height: 300px; background: #4a3b2a;
+            padding: 10px; border-radius: 5px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .window-pane {
+            background: rgba(200, 220, 230, 0.2);
+            position: relative; overflow: hidden; cursor: pointer;
+        }
+        .window-fog {
+            position: absolute; inset: 0; background: rgba(255,255,255,0.7);
+            transition: opacity 0.8s ease; display: flex; align-items: center; justify-content: center;
+            color: #555; font-size: 0.8rem; font-style: italic;
+        }
+        .window-pane:hover .window-fog { opacity: 0.2; }
+        .pane-content {
+            position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+            font-weight: bold; color: #fff; text-shadow: 0 0 5px #000; opacity: 0;
+            transition: opacity 0.3s;
+            text-align: center; padding: 5px; font-size: 1rem;
+        }
+        .window-pane:hover .pane-content { opacity: 1; }
+
+        .envelope-container {
+            perspective: 1000px; width: 200px; height: 140px; position: relative; margin-top: 2rem; cursor: pointer;
+        }
+        .envelope {
+            width: 100%; height: 100%; background: #e0c097; position: relative;
+            transform-style: preserve-3d; transition: transform 0.6s;
+        }
+        .flap {
+            position: absolute; top: 0; left: 0; width: 0; height: 0;
+            border-left: 100px solid transparent; border-right: 100px solid transparent;
+            border-top: 70px solid #dcb083; transform-origin: top; transition: transform 0.4s 0.2s; z-index: 10;
+        }
+        .envelope.open .flap { transform: rotateX(180deg); z-index: 0; }
+        .letter-paper {
+            position: absolute; top: 10px; left: 10px; width: 180px; height: 120px;
+            background: white; transition: transform 0.5s 0.6s, opacity 0.2s 0.5s; z-index: 5;
+            display: flex; align-items: center; justify-content: center; font-size: 0.6rem; color: #333; padding: 10px;
+            box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+            
+            transform: translateY(20px) scale(0.9);
+            opacity: 0;
+        }
+        .envelope.open .letter-paper { 
+            transform: translateY(-80px) scale(1);
+            opacity: 1;
+        }
+
+        .compass-container {
+            width: 200px; height: 200px; border: 8px solid #b8860b; border-radius: 50%;
+            background: #222; position: relative; box-shadow: 0 0 20px rgba(184, 134, 11, 0.3);
+            cursor: pointer; margin-top: 2rem;
+        }
+        .compass-face {
+            width: 100%; height: 100%; border-radius: 50%; position: relative;
+            background: radial-gradient(circle, #333, #111);
+        }
+        .compass-needle {
+            position: absolute; top: 50%; left: 50%;
+            width: 16px; height: 140px; 
+            transform: translate(-50%, -50%) rotate(0deg);
+            transition: transform 2.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+            filter: drop-shadow(0 2px 3px rgba(0,0,0,0.5)); 
+            z-index: 5;
+        }
+        .needle-north {
+            position: absolute; top: 0; left: 0; width: 0; height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-bottom: 70px solid #ff0000; 
+        }
+        .needle-south {
+            position: absolute; bottom: 0; left: 0; width: 0; height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-top: 70px solid #f0f0f0; 
+        }
+        .compass-pivot {
+            position: absolute; top: 50%; left: 50%;
+            width: 14px; height: 14px;
+            background: #ffd700;
+            border: 2px solid #8b4513;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.6);
+        }
+
+        .compass-label {
+            position: absolute; color: #b8860b; font-weight: bold; font-size: 1.2rem;
+        }
+        .c-n { top: 10px; left: 50%; transform: translateX(-50%); }
+        .c-s { bottom: 10px; left: 50%; transform: translateX(-50%); }
+        .c-e { right: 10px; top: 50%; transform: translateY(-50%); }
+        .c-w { left: 10px; top: 50%; transform: translateY(-50%); }
+
+        .floating-balloon {
+            position: absolute; bottom: -100px; font-size: 3rem; cursor: pointer;
+            animation: floatUp 8s linear forwards; user-select: none;
+            pointer-events: auto;
+        }
+        @keyframes floatUp {
+            to { bottom: 110vh; }
+        }
+
+    </style>
+</head>
+<body class="font-body bg-gray-900 overflow-hidden"> 
+
+    <canvas id="particle-canvas"></canvas>
+
+    <!-- Page 12's 3D scene renders here (canvas is created on demand by the script).
+         Sits behind #mainContent and never receives pointer events. -->
+    <div id="solar-stage" aria-hidden="true">
+        <div class="solar-fallback">
+            <div class="sf-sun"></div>
+            <div class="sf-system">
+                <div class="sf-earth"></div>
+                <div class="sf-moon-orbit"><div class="sf-moon"></div></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Opening screen: asks for a name (required) and a photo (optional).
+         Everything stays in this tab's memory — nothing is uploaded or stored. -->
+    <div id="intro-screen" role="dialog" aria-modal="true" aria-labelledby="intro-title">
+        <form id="intro-form" class="intro-card" novalidate autocomplete="off">
+            <h1 id="intro-title" class="intro-title">Before the doors open</h1>
+            <p class="intro-sub">Tell the universe who is arriving.</p>
+
+            <div class="intro-field">
+                <label for="intro-name">Your name</label>
+                <input id="intro-name" type="text" maxlength="30" placeholder="Type your name" autocomplete="given-name" spellcheck="false" aria-describedby="intro-name-msg" required>
+                <p id="intro-name-msg" class="intro-msg" role="alert"></p>
+            </div>
+
+            <div class="intro-photo">
+                <button type="button" id="intro-photo-pick" class="intro-avatar" aria-label="Choose a photo of yourself">
+                    <img id="intro-photo-preview" alt="Your chosen photo" hidden>
+                    <svg id="intro-photo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h1.1a1 1 0 0 0 .8-.4l.9-1.2A1 1 0 0 1 10.1 4h3.8a1 1 0 0 1 .8.4l.9 1.2a1 1 0 0 0 .8.4h1.1A2.5 2.5 0 0 1 20 8.5v8A2.5 2.5 0 0 1 17.5 19h-11A2.5 2.5 0 0 1 4 16.5z"/>
+                        <circle cx="12" cy="12.5" r="3.2"/>
+                    </svg>
+                </button>
+                <div class="intro-actions">
+                    <button type="button" id="intro-photo-choose" class="intro-link">Add a photo</button>
+                    <button type="button" id="intro-photo-remove" class="intro-link" hidden>Remove</button>
+                </div>
+                <input id="intro-photo-input" type="file" accept="image/jpeg,image/png,image/webp,image/gif" hidden>
+                <p id="intro-photo-msg" class="intro-msg" role="alert"></p>
+                <p class="intro-note">Optional. Your photo stays in this browser tab and is never uploaded.</p>
+            </div>
+
+            <button type="submit" id="intro-begin" class="intro-begin">Open the first door</button>
+        </form>
+    </div>
+
+    <main id="mainContent" inert>
+
+        <section id="page-1" class="page">
+            <img id="page1-avatar" class="visitor-avatar poetic-text" alt="" hidden>
+            <h1 class="font-display text-6xl md:text-8xl poetic-text" style="text-shadow: 0 0 15px #f0e68c;">21 Doors</h1>
+            <p class="font-display text-3xl md:text-4xl mt-2 poetic-text visitor-name-accent" style="transition-delay: 0.5s;">for <span data-visitor-name>you</span></p>
+            <p class="text-xl md:text-2xl mt-4 poetic-text" style="transition-delay: 0.8s;">A Journey Through Your Universe</p>
+            <div id="door-of-light" class="mt-12 poetic-text interactive-el" style="transition-delay: 1.2s;" title="Click to begin the journey"></div>
+            <p class="text-lg md:text-xl mt-4 poetic-text" style="transition-delay: 1.5s;">Click the door to begin</p>
+        </section>
+
+        <section id="page-2" class="page">
+            <h2 class="font-display text-4xl md:text-5xl poetic-text" style="text-shadow: 0 0 10px #fff;">The Day the Stars Whispered 21</h2>
+            <p id="star-whisper" class="text-lg md:text-xl mt-4 poetic-text" style="transition-delay: 0.5s; min-height: 2.5em;">
+                A whisper of magic...
+            </p>
+            <div class="scroll-hint">Tap anywhere to continue</div>
+        </section>
+        
+        <section id="page-3" class="page">
+            <h2 class="font-display text-4xl md:text-5xl poetic-text text-white">The Garden of Untold Wishes</h2>
+            <p class="text-lg md:text-xl mt-4 poetic-text text-gray-200" style="transition-delay: 0.5s;">Where every petal holds a dream.</p>
+            <div id="glowing-heart-btn" class="interactive-el" title="A secret...">💖</div>
+            <div class="scroll-hint text-gray-200">Tap anywhere to continue</div>
+        </section>
+        
+        <section id="page-4" class="page">
+            <h2 class="font-display text-4xl md:text-5xl poetic-text text-gray-800">The Mirror of Time</h2>
+            <p class="text-lg md:text-xl mt-4 poetic-text text-gray-700" style="transition-delay: 0.5s;">Look into the past, see the future.</p>
+            <div id="mirror" class="mt-8 poetic-text interactive-el" style="transition-delay: 0.8s;">
+                <div class="mirror-inner" style="width:100%; height:100%; border-radius:inherit; overflow:hidden; position:relative;">
+                    <img id="mirror-img"
+                        src="Main.jpg"
+                        alt="Mirror reflection"
+                        style="width:100%; height:100%; object-fit:cover; display:block;" /> 
+                </div>
+            </div>
+            <p id="mirror-text" class="text-xl md:text-2xl font-display transition-opacity duration-500 mt-4" 
+                style="color: #304352;">
+                Tap to see...
+            </p>
+            <div class="scroll-hint text-gray-600">Tap anywhere to continue</div>
+        </section>
+
+        <section id="page-6" class="page">
+            <h2 class="font-display text-4xl md:text-5xl poetic-text text-white">The Sky Writes Your Name</h2>
+            <div class="mt-8 poetic-text" style="transition-delay: 0.5s;">
+                <p id="sky-message" class="text-4xl md:text-5xl font-display text-white h-16" style="text-shadow: 0 0 15px rgba(255,255,255,0.8);"></p>
+                <p id="sky-final" class="text-xl mt-4 text-white opacity-0 transition-opacity duration-1000" style="text-shadow: 0 0 10px #a1c4fd;"></p>
+            </div>
+            <div class="scroll-hint">Tap anywhere to continue</div>
+        </section>
+
+        <section id="page-7" class="page">
+            <h2 class="font-display text-4xl md:text-5xl poetic-text">The Library of Laughs</h2>
+            <p class="text-lg md:text-xl mt-4 poetic-text" style="transition-delay: 0.5s;">Tap a book to uncover a giggle.</p>
+            <div class="flex flex-wrap justify-center mt-8 poetic-text" style="transition-delay: 0.8s; max-width: 600px;">
+                <div class="book interactive-el" style="animation-delay: 0.1s; background-color: #8B4513; border-color: #D2B48C;"></div>
+                <div class="book interactive-el" style="animation-delay: 0.3s; background-color: #556B2F; border-color: #8FBC8F;"></div>
+                <div class="book interactive-el" style="animation-delay: 0.2s; background-color: #800000; border-color: #CD5C5C;"></div>
+                <div class="book interactive-el" style="animation-delay: 0.4s; background-color: #483D8B; border-color: #9370DB;"></div>
+                <div class="book interactive-el" style="animation-delay: 0.15s; background-color: #2F4F4F; border-color: #5F9EA0;"></div>
+            </div>
+            <div class="h-20"></div> 
+            <div class="scroll-hint">Tap anywhere to continue</div>
+        </section>
+
+        <section id="page-8" class="page">
+            <h2 class="font-display text-4xl md:text-5xl poetic-text">The Comedy Clock</h2>
+            <p class="text-lg md:text-xl mt-4 poetic-text" style="transition-delay: 0.5s;">Tap an hour for a time-saving joke.</p>
+            <div id="clock-face" class="mt-8 poetic-text interactive-el" style="transition-delay: 0.8s; width: 220px; height: 220px;">
+            </div>
+            <p id="clock-thought" class="text-lg md:text-xl mt-8 h-20 px-4 transition-opacity duration-500 flex items-center justify-center text-center text-yellow-100"></p>
+            <div class="scroll-hint">Tap anywhere to continue</div>
+        </section>
+        
+        <section id="page-9" class="page">
+            <h2 class="font-display text-4xl md:text-5xl poetic-text">The Bridge Between Then and Now</h2>
+            <p class="text-lg md:text-xl mt-4 poetic-text" style="transition-delay: 0.5s;">She has walked through seasons to bloom here.</p>
+            
+            <div class="relative w-full max-w-3xl mt-10 h-64 flex items-center justify-between px-4 md:px-12 poetic-text" style="transition-delay: 0.8s;">
+                <div class="bridge-stone interactive-el group relative flex flex-col items-center cursor-pointer" data-msg="Your laughter that heals the quietest moments.">
+                    <div class="w-16 h-16 rounded-full border-2 border-blue-300 flex items-center justify-center bg-blue-900/50 hover:bg-blue-300 transition-all transform hover:scale-110 shadow-[0_0_15px_rgba(147,197,253,0.5)]">🌱</div>
+                    <span class="mt-4 text-sm font-body text-blue-200 opacity-70 group-hover:opacity-100 transition-opacity">The Roots</span>
+                </div>
+                <div class="h-0.5 flex-1 bg-gradient-to-r from-blue-300 via-purple-300 to-pink-300 mx-4 opacity-50"></div>
+                
+                <div class="bridge-stone interactive-el group relative flex flex-col items-center cursor-pointer" data-msg="Your strength that turns obstacles into paths.">
+                    <div class="w-16 h-16 rounded-full border-2 border-purple-300 flex items-center justify-center bg-purple-900/50 hover:bg-purple-700 transition-all transform hover:scale-110 shadow-[0_0_15px_rgba(216,180,254,0.5)]">🦋</div>
+                    <span class="mt-4 text-sm font-body text-purple-200 opacity-70 group-hover:opacity-100 transition-opacity">The Journey</span>
+                </div>
+                <div class="h-0.5 flex-1 bg-gradient-to-r from-purple-300 to-pink-300 mx-4 opacity-50"></div>
+
+                <div class="bridge-stone interactive-el group relative flex flex-col items-center cursor-pointer" data-msg="The infinite light you carry within.">
+                    <div class="w-16 h-16 rounded-full border-2 border-pink-300 flex items-center justify-center bg-pink-900/50 hover:bg-pink-700 transition-all transform hover:scale-110 shadow-[0_0_15px_rgba(253,164,175,0.5)]">✨</div>
+                    <span class="mt-4 text-sm font-body text-pink-200 opacity-70 group-hover:opacity-100 transition-opacity">The Now</span>
+                </div>
+            </div>
+
+            <p id="bridge-text" class="text-xl md:text-2xl mt-8 h-12 text-white font-display transition-all duration-500 opacity-0 translate-y-4 px-4">
+            </p>
+
+            <div class="scroll-hint">Tap anywhere to continue</div>
+        </section>
+
+        <section id="page-10" class="page">
+            <div class="css-rain-overlay"></div> 
+            <h2 class="font-display text-4xl md:text-5xl poetic-text" style="text-shadow: 0 0 15px rgba(135, 206, 250, 0.6);">The Room of Rain</h2>
+            <p class="text-lg md:text-xl mt-4 poetic-text" style="transition-delay: 0.5s; color: #a0d8ef;">Every drop tells a story of growth.</p>
+            
+            <div class="rain-glass-panel relative w-full max-w-3xl mt-10 h-72 flex items-center justify-around px-4 md:px-12 poetic-text" style="transition-delay: 0.8s;">
+                
+                <div class="rain-drop interactive-el group relative flex flex-col items-center cursor-pointer" data-msg="Your sweat that waters the flowers of tomorrow.">
+                    <div class="liquid-orb w-20 h-20 flex items-center justify-center text-2xl text-blue-100">💧</div>
+                    <span class="mt-4 text-sm font-body text-blue-200 opacity-70 group-hover:opacity-100 transition-opacity font-bold tracking-widest">EMPATHY</span>
+                </div>
+                
+                <div class="rain-drop interactive-el group relative flex flex-col items-center cursor-pointer" data-msg="Your depth that is as vast as the ocean.">
+                    <div class="liquid-orb w-24 h-24 flex items-center justify-center text-3xl text-cyan-100" style="animation-delay: -2s;">🌊</div>
+                    <span class="mt-4 text-sm font-body text-cyan-200 opacity-70 group-hover:opacity-100 transition-opacity font-bold tracking-widest">DEPTH</span>
+                </div>
+
+                <div class="rain-drop interactive-el group relative flex flex-col items-center cursor-pointer" data-msg="The way you turn the heavy grey into a spectrum of light.">
+                    <div class="liquid-orb w-20 h-20 flex items-center justify-center text-2xl text-sky-100" style="animation-delay: -5s;">🌈</div>
+                    <span class="mt-4 text-sm font-body text-sky-200 opacity-70 group-hover:opacity-100 transition-opacity font-bold tracking-widest">ALCHEMY</span>
+                </div>
+            </div>
+
+            <p id="rain-text" class="text-xl md:text-2xl mt-8 h-12 text-blue-100 font-display transition-all duration-500 opacity-0 translate-y-4 px-4" style="text-shadow: 0 0 10px rgba(100,200,255,0.5);">
+            </p>
+
+            <div id="rain-word-container" class="absolute inset-0 pointer-events-none"></div>
+            <div class="scroll-hint" style="color: rgba(173, 216, 230, 0.6);">Tap anywhere to continue</div>
+        </section>
+
+        <section id="page-11" class="page">
+            <h2 class="font-display text-4xl md:text-5xl poetic-text">The Candle of Forever</h2>
+            <div class="text-7xl mt-8 poetic-text" style="transition-delay: 0.5s; text-shadow: 0 0 15px #f0e68c; animation: pulse 3s infinite;">🕯️</div>
+            <p class="text-lg md:text-xl mt-4 poetic-text" style="transition-delay: 1s;">A quiet light for the road ahead.</p>
+            <p class="text-lg md:text-xl mt-2 poetic-text" style="transition-delay: 1.5s;">Like dawn stitched into the dark,</p>
+            <p class="text-lg md:text-xl mt-2 poetic-text" style="transition-delay: 2s;">A small eternity of warmth,</p>
+            <p class="text-lg md:text-xl mt-2 poetic-text" style="transition-delay: 2.5s;">Carrying you gently toward your tomorrow.</p>
+            <div class="scroll-hint">Tap anywhere to continue</div>
+        </section>
+
+        <section id="page-12" class="page">
+            <div class="solar-copy">
+                <h2 class="font-display text-4xl md:text-5xl poetic-text">The Voice of the Universe</h2>
+                <p class="text-lg md:text-xl mt-4 poetic-text" style="transition-delay: 0.5s;">The cosmos has a message just for <span class="visitor-name-accent" data-visitor-name>you</span>.</p>
+                <p class="solar-hint poetic-text" style="transition-delay: 0.8s;">Touch a world to hear what it says.</p>
+                <!-- Same three poetic messages as before; now real buttons that also steer the 3D camera. -->
+                <div class="solar-chips poetic-text" style="transition-delay: 1s;" role="group" aria-label="Worlds to touch">
+                    <button type="button" class="solar-chip cosmic-body interactive-el" data-focus="sun" aria-pressed="false" data-msg="You shine with the same fire that lights the galaxies."><span class="chip-dot chip-sun"></span>Stardust</button>
+                    <button type="button" class="solar-chip cosmic-body interactive-el" data-focus="moon" aria-pressed="false" data-msg="Even in your quietest phases, you are whole."><span class="chip-dot chip-moon"></span>Phases</button>
+                    <button type="button" class="solar-chip cosmic-body interactive-el" data-focus="earth" aria-pressed="false" data-msg="Your soul has gravity, it draws beautiful things close."><span class="chip-dot chip-earth"></span>Gravity</button>
+                </div>
+                <p id="universe-text" class="text-xl md:text-2xl mt-8 h-16 text-white font-display transition-all duration-500 opacity-0 translate-y-4" aria-live="polite"></p>
+            </div>
+            <p id="solar-loading" class="solar-loading" role="status" hidden>Gathering starlight…</p>
+            <p class="sr-only">An animated view of the Sun, with the Earth turning in its light and the Moon circling the Earth.</p>
+            <div class="scroll-hint">Tap anywhere to continue</div>
+        </section>
+
+        <section id="page-13" class="page">
+            <div class="absolute bottom-0 left-0 w-full h-1/3 overflow-hidden pointer-events-none z-0">
+                <div class="w-[120%] h-full bg-green-300 rounded-[100%] translate-y-1/2 -translate-x-10 shadow-inner" style="background: linear-gradient(to bottom, #a8e063, #56ab2f);"></div>
+                <div class="absolute bottom-4 left-[10%] text-4xl animate-sway">🌻</div>
+                <div class="absolute bottom-8 left-[30%] text-3xl animate-sway" style="animation-delay: 1s">🌷</div>
+                <div class="absolute bottom-2 left-[60%] text-5xl animate-sway" style="animation-delay: 0.5s">🌼</div>
+                <div class="absolute bottom-6 left-[85%] text-4xl animate-sway" style="animation-delay: 1.5s">🌹</div>
+            </div>
+
+            <h2 class="font-display text-4xl md:text-5xl poetic-text text-gray-800 z-10 relative">The Butterfly Flight</h2>
+            <p class="text-lg md:text-xl mt-4 poetic-text text-gray-700 z-10 relative" style="transition-delay: 0.5s;">Catch the light to reveal the meaning.</p>
+            
+            <div class="relative w-full h-64 mt-10 poetic-text z-10" style="transition-delay: 0.8s;">
+                <div id="flying-butterfly" class="flying-butterfly interactive-el" title="Catch me!">🦋</div>
+            </div>
+
+            <p id="butterfly-text" class="text-xl md:text-2xl mt-8 h-16 text-gray-800 font-display transition-all duration-500 opacity-0 translate-y-4 px-4 z-10 relative">
+            </p>
+
+            <button id="page-13-next" class="mt-8 px-6 py-2 bg-white/40 hover:bg-white/60 rounded-full backdrop-blur-sm transition-all text-gray-800 font-medium interactive-el z-20 shadow-lg">
+                Continue Journey →
+            </button>
+        </section>
+
+        <section id="page-14" class="page">
+            <h2 class="font-display text-4xl md:text-5xl poetic-text">The Silent Poem</h2>
+            <p class="text-lg md:text-xl mt-4 poetic-text text-gray-400 mb-8" style="transition-delay: 0.5s;">(Tap the quill to let the words flow)</p>
+            
+            <div id="poem-container" class="min-h-[200px] flex flex-col items-center justify-center space-y-4 w-full max-w-2xl">
+            </div>
+
+            <div id="quill-btn" class="text-6xl mt-8 interactive-el cursor-pointer hover:scale-110 transition-transform duration-300" style="filter: drop-shadow(0 0 10px white);">
+                🪶
+            </div>
+            <div class="scroll-hint">Tap anywhere to continue</div>
+        </section>
+
+        <section id="page-15" class="page">
+            <h2 class="font-display text-4xl md:text-5xl poetic-text text-gray-800">The Window to Tomorrow</h2>
+            <p class="text-lg md:text-xl mt-4 poetic-text text-gray-600" style="transition-delay: 0.5s;">Wipe the fog to see clearly.</p>
+            
+            <div class="window-frame mt-8 poetic-text interactive-el" style="transition-delay: 0.8s;">
+                <div class="window-pane">
+                    <div class="pane-content text-2xl">You brighten every tomorrow.</div>
+                    <div class="window-fog">Hover/Touch</div>
+                </div>
+                <div class="window-pane">
+                    <div class="pane-content text-2xl">Your spirit writes tomorrow.</div>
+                    <div class="window-fog">Hover/Touch</div>
+                </div>
+                <div class="window-pane">
+                    <div class="pane-content text-2xl">Your dreams bloom quietly.</div>
+                    <div class="window-fog">Hover/Touch</div>
+                </div>
+                <div class="window-pane">
+                    <div class="pane-content text-2xl">Your calm softens tomorrow.</div>
+                    <div class="window-fog">Hover/Touch</div>
+                </div>
+            </div>
+
+            <p id="window-text" class="text-xl md:text-2xl mt-8 h-16 text-gray-800 font-display transition-all duration-500 px-4">
+                Look closer...
+            </p>
+            <div class="scroll-hint text-gray-600">Tap anywhere to continue</div>
+        </section>
+
+        <section id="page-16" class="page">
+            <h2 class="font-display text-4xl md:text-5xl poetic-text text-gray-800">The Stardust Letter</h2>
+            <p class="text-lg md:text-xl mt-4 poetic-text text-gray-600" style="transition-delay: 0.5s;">A message sent from the origin.</p>
+            
+            <div class="envelope-container poetic-text interactive-el" id="letter-envelope" style="transition-delay: 0.8s;">
+                <div class="envelope">
+                    <div class="flap"></div>
+                    <div class="letter-paper">
+                        <p class="text-center">You have a light that never tries to shine,but somehow, it does.Your smile feels like a small piece of art warm, simple, deep.You stay playful yet thoughtful,and that mix makes you quietly unforgettable.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <p class="text-lg mt-12 text-gray-500 poetic-text">Tap the envelope to open</p>
+            <div class="scroll-hint text-gray-600">Tap anywhere to continue</div>
+        </section>
+
+        <section id="page-17" class="page">
+            <h2 class="font-display text-4xl md:text-5xl poetic-text">The Compass of Heart</h2>
+            <p class="text-lg md:text-xl mt-4 poetic-text" style="transition-delay: 0.5s;">Tap to spin the needle.</p>
+            
+            <div class="compass-container interactive-el poetic-text" id="compass" style="transition-delay: 0.8s;">
+                <div class="compass-face">
+                    <div class="compass-label c-n">N</div>
+                    <div class="compass-label c-s">S</div>
+                    <div class="compass-label c-e">E</div>
+                    <div class="compass-label c-w">W</div>
+                    <div class="compass-needle" id="compass-needle">
+                        <div class="needle-north"></div>
+                        <div class="needle-south"></div>
+                    </div>
+                    <div class="compass-pivot"></div> 
+                </div>
+            </div>
+            
+            <p id="map-text" class="text-xl md:text-2xl mt-8 h-16 text-white font-display transition-all duration-500 opacity-1 translate-y-0 px-4">
+                Where will it guide you?
+            </p>
+            <div class="scroll-hint">Tap anywhere to continue</div>
+        </section>
+
+        <section id="page-18" class="page">
+            <h2 class="font-display text-4xl md:text-5xl poetic-text text-gray-800">The Floating Joy</h2>
+            <p class="text-lg md:text-xl mt-4 poetic-text text-gray-700" style="transition-delay: 0.5s;">Pop the happiness as it flies!</p>
+            
+            <div id="balloon-container" class="absolute inset-0 overflow-hidden pointer-events-none">
+            </div>
+            
+            <p id="balloon-text" class="text-xl md:text-2xl mt-auto mb-20 h-16 text-gray-800 font-display transition-all duration-500 px-4 z-20">
+                Pop them!
+            </p>
+            
+            <button id="page-18-next" class="absolute bottom-10 left-1/2 transform -translate-x-1/2 px-6 py-2 bg-white/40 hover:bg-white/60 rounded-full backdrop-blur-sm transition-all text-gray-800 font-medium interactive-el z-30 shadow-lg">
+                Continue Journey →
+            </button>
+        </section>
+
+        <section id="page-19" class="page">
+            <h2 class="font-display text-4xl md:text-5xl poetic-text">The Secret Message</h2>
+            <p class="text-lg md:text-xl mt-4 poetic-text" style="transition-delay: 0.5s;">Tap a file to decode the truth.</p>
+            
+            <div class="relative w-full max-w-3xl mt-10 h-64 flex items-center justify-around px-4 md:px-12 poetic-text" style="transition-delay: 0.8s;">
+                <div class="secret-code interactive-el group relative flex flex-col items-center cursor-pointer" data-decoded="YOU ARE MAGIC">
+                    <div class="w-16 h-16 rounded-full border-2 border-green-400 flex items-center justify-center bg-gray-800 hover:bg-gray-700 transition-all transform hover:scale-110 shadow-[0_0_15px_rgba(74,222,128,0.5)] text-green-400 font-mono text-xl">?</div>
+                    <span class="mt-4 text-sm font-body text-green-400 opacity-70 group-hover:opacity-100 transition-opacity">File 01</span>
+                </div>
+                <div class="secret-code interactive-el group relative flex flex-col items-center cursor-pointer" data-decoded="SHINE BRIGHT">
+                    <div class="w-16 h-16 rounded-full border-2 border-blue-400 flex items-center justify-center bg-gray-800 hover:bg-gray-700 transition-all transform hover:scale-110 shadow-[0_0_15px_rgba(96,165,250,0.5)] text-blue-400 font-mono text-xl">#</div>
+                    <span class="mt-4 text-sm font-body text-blue-400 opacity-70 group-hover:opacity-100 transition-opacity">File 02</span>
+                </div>
+                <div class="secret-code interactive-el group relative flex flex-col items-center cursor-pointer" data-decoded="Keep Smiling">
+                    <div class="w-16 h-16 rounded-full border-2 border-purple-400 flex items-center justify-center bg-gray-800 hover:bg-gray-700 transition-all transform hover:scale-110 shadow-[0_0_15px_rgba(192,132,252,0.5)] text-purple-400 font-mono text-xl">!</div>
+                    <span class="mt-4 text-sm font-body text-purple-400 opacity-70 group-hover:opacity-100 transition-opacity">File 03</span>
+                </div>
+            </div>
+            <p id="secret-text" class="text-xl md:text-2xl mt-8 h-16 text-green-400 font-mono transition-all duration-500 opacity-0 translate-y-4 px-4 tracking-widest"></p>
+            <div class="scroll-hint">Tap anywhere to continue</div>
+        </section>
+
+        <section id="page-20" class="page">
+            <h2 class="font-display text-4xl md:text-5xl poetic-text text-gray-800">The Mystery Gift</h2>
+            <div id="gift-box" class="mt-8 poetic-text interactive-el" style="transition-delay: 0.5s;">🎁</div>
+            <div id="bouquet" class="text-9xl mt-8 poetic-text hidden" style="animation: bloom 1s ease-out;">💐</div>
+            <p id="gift-quote" class="text-2xl md:text-3xl mt-4 font-display text-gray-800 opacity-0 transition-opacity duration-1000"></p>
+            <div class="scroll-hint text-gray-600">Tap anywhere to continue</div>
+        </section>
+
+        <section id="page-21" class="page">
+            <h2 class="font-display text-4xl md:text-5xl poetic-text">The Final Door</h2>
+            <div id="final-door" class="mt-12 poetic-text interactive-el" style="transition-delay: 0.5s;"></div>
+            <p class="text-xl md:text-2xl max-w-lg mx-auto mt-8 poetic-text text-white" style="transition-delay: 1s; text-shadow: 0 0 5px #f0e68c;">
+                The greatest journey wasn't through these doors, it was the moment you stepped into the world. Now, unlock the last page.
+            </p>
+            <div class="scroll-hint">Tap to open the final door</div>
+        </section>
+
+        <section id="page-22" class="page">
+            <img id="final-portrait" class="final-portrait poetic-text" alt="" hidden>
+            <h1 class="font-display text-6xl md:text-8xl poetic-text" style="text-shadow: 0 0 15px #f0e68c;">Happy 21st Birthday</h1>
+            <p class="font-display text-5xl md:text-6xl mt-3 poetic-text visitor-name-accent" style="transition-delay: 0.3s; text-shadow: 0 0 15px rgba(240, 230, 140, 0.6);" data-visitor-name>you</p>
+            <p class="text-3xl mt-8 font-display poetic-text text-pink-300" style="transition-delay: 0.5s;">
+                You are the main Charecter of your story, all spot light on you. So keep shining, keep dreaming, keep smiling  and never forget the magic you carry within.
+            </p>
+            <p class="text-3xl mt-8 poetic-text" style="transition-delay: 1s;">✨</p>
+        </section>
+
+    </main>
+
+    <div id="easter-egg-modal" class="">
+        <div class="bg-white text-gray-800 p-8 rounded-lg shadow-2xl max-w-sm mx-4 text-center">
+            <p class="text-xl md:text-2xl font-display">You found it.</p>
+            <p class="text-lg mt-4">Even the smallest light always finds its way.</p>
+            <button id="close-modal-btn" class="mt-6 px-6 py-2 bg-indigo-500 text-white rounded-lg interactive-el hover:bg-indigo-600 transition-colors">Close</button>
+        </div>
+    </div>
+
+
+    <script type="module">
+        const mainContentEl = document.getElementById('mainContent'); 
+        const pages = document.querySelectorAll('.page');
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        const easterEggModal = document.getElementById('easter-egg-modal');
+        let particles = [];
+        let currentPage = 0;
+        let audioInitialized = false;
+        let whisperTimeout;
+        // Callbacks run once per frame by the single animation loop below (animateParticles).
+        // The Three.js scene registers here while visible, so the page never has two rAF loops.
+        const frameHooks = new Set();
+
+        // Placeholder audio - user can replace string with actual URL
+        const bgMusic = new Audio(''); 
+
+        const pageGradients = {
+            'page-1': 'linear-gradient(135deg, #2c1e3a, #1a1a2e)',
+            'page-2': 'linear-gradient(180deg, #0c0a18, #2a2a4e, #4a3a6a)',
+            'page-3': 'linear-gradient(45deg, #a6c1ee, #f8cdda)',
+            'page-4': 'linear-gradient(135deg, #e0eafc, #cfdef3)',
+            'page-6': 'linear-gradient(180deg, #a1c4fd, #c2e9fb)',
+            'page-7': 'linear-gradient(45deg, #5a3e2b, #8a624a)',
+            'page-8': 'linear-gradient(135deg, #304352, #d7d2cc)',
+            'page-9': 'linear-gradient(180deg, #4b6cb7, #182848)',
+            'page-10': 'linear-gradient(180deg, #1a1c2c 0%, #4a69bd 100%)', 
+            'page-11': 'linear-gradient(180deg, #2b2b3e, #1a1a2e)',
+            'page-12': 'radial-gradient(ellipse at 70% 40%, #0b1426 0%, #04060f 60%, #010208 100%)',
+            'page-13': 'linear-gradient(135deg, #fddb92, #d1fdff)',
+            'page-14': 'linear-gradient(180deg, #232526, #414345)',
+            'page-15': 'linear-gradient(180deg, #fceabb, #f8b500)',
+            'page-16': 'linear-gradient(135deg, #3e5151, #decba4)',
+            'page-17': 'linear-gradient(135deg, #868f96, #596164)',
+            'page-18': 'linear-gradient(45deg, #ff9a9e, #fad0c4)',
+            'page-19': 'linear-gradient(135deg, #373B44, #4286f4)',
+            'page-20': 'linear-gradient(45deg, #f6d365, #fda085)',
+            'page-21': 'linear-gradient(180deg, #00000c, #1a1a3a, #3a3a6a)',
+            'page-22': 'linear-gradient(180deg, #0c0a18, #2a2a4e, #4a3a6a)'
+        };
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class Particle {
+            constructor(x, y, vx, vy, radius, color, life) {
+                this.x = x; this.y = y; this.vx = vx; this.vy = vy;
+                this.radius = radius; this.color = color; this.life = life;
+                this.initialLife = life;
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = this.color;
+                if (this.initialLife === Infinity) {
+                    ctx.globalAlpha = 1; 
+                } else {
+                    ctx.globalAlpha = Math.max(0, this.life / this.initialLife);
+                }
+                ctx.fill();
+                ctx.closePath();
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                if (this.life !== Infinity) {
+                    this.life--;
+                }
+            }
+        }
+
+        function clearParticles() { particles = []; }
+
+        function createStars(count = 100) {
+            clearParticles();
+            for (let i = 0; i < count; i++) {
+                const x = Math.random() * canvas.width;
+                const y = Math.random() * canvas.height;
+                const radius = Math.random() * 1.5;
+                particles.push(new Particle(x, y, 0, 0, radius, 'white', Infinity));
+            }
+        }
+        
+        function createRain(count = 100) {
+            clearParticles();
+            for (let i = 0; i < count; i++) {
+                const x = Math.random() * canvas.width;
+                const y = Math.random() * canvas.height - canvas.height;
+                const vy = Math.random() * 4 + 4;
+                particles.push(new Particle(x, y, 0, vy, 1, 'rgba(170, 190, 210, 0.7)', 150));
+            }
+        }
+        
+        function createButterflies(count = 10) {
+            clearParticles();
+            for (let i = 0; i < count; i++) {
+                const x = Math.random() * canvas.width;
+                const y = Math.random() * canvas.height;
+                const vx = (Math.random() - 0.5) * 2;
+                const vy = (Math.random() - 0.5) * 2;
+                const color = `rgba(${Math.floor(Math.random() * 100) + 150}, 200, 255, 0.7)`;
+                particles.push(new Particle(x, y, vx, vy, 3, color, Infinity));
+            }
+        }
+
+        function createConfetti(count = 200) {
+            clearParticles();
+            for (let i = 0; i < count; i++) {
+                const x = Math.random() * canvas.width;
+                const y = -Math.random() * canvas.height;
+                const vx = (Math.random() - 0.5) * 4;
+                const vy = Math.random() * 3 + 2;
+                const color = `hsl(${Math.random() * 360}, 100%, 70%)`;
+                particles.push(new Particle(x, y, vx, vy, Math.random() * 3 + 2, color, 300));
+            }
+        }
+
+        function animateParticles(now) {
+            for (const hook of frameHooks) hook(now);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.globalAlpha = 1;
+            
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.draw();
+                p.update();
+                
+                const pageId = pages[currentPage]?.id || '';
+                
+                if (pageId === 'page-10' && p.y > canvas.height) { 
+                    p.y = -p.radius; p.x = Math.random() * canvas.width;
+                }
+                else if (pageId === 'page-13') { 
+                }
+                if (p.life === 0) particles.splice(i, 1);
+            }
+            requestAnimationFrame(animateParticles);
+        }
+
+        function typeLine(el, text, speed) {
+            return new Promise(resolve => {
+                let i = 0;
+                
+                if(el.textContent === text) { resolve(); return; }
+                
+                const typing = setInterval(() => {
+                    if (i < text.length) { el.textContent += text.charAt(i); i++; } 
+                    else { clearInterval(typing); resolve(); }
+                }, speed);
+            });
+        }
+
+        function eraseLine(el, speed) {
+            return new Promise(resolve => {
+                const erasing = setInterval(() => {
+                    if (el.textContent.length > 0) { el.textContent = el.textContent.substring(0, el.textContent.length - 1); } 
+                    else { clearInterval(erasing); resolve(); }
+                }, speed);
+            });
+        }
+
+        
+        const skyMessages = [
+            "You are stardust.", "You are light.", "You are the favorite view.", "You are a beautiful sweet chaos.",
+            "You are a new beginning.", "You are worth watching.", "You are the perfect answer."
+        ];
+        async function animateSkyText() {
+            const el = document.getElementById('sky-message');
+            const finalEl = document.getElementById('sky-final');
+            if (!el || !finalEl) return;
+            if(el.dataset.played === "true") return;
+
+            el.classList.add('typing-cursor');
+            for (let i = 0; i < 6; i++) {
+                await typeLine(el, skyMessages[i], 70);
+                await new Promise(r => setTimeout(r, 800)); 
+                await eraseLine(el, 40);
+                await new Promise(r => setTimeout(r, 300)); 
+            }
+            await typeLine(el, skyMessages[6], 70);
+            el.classList.remove('typing-cursor');
+            finalEl.textContent = visitor.name ? `Written on the wind for you, ${visitor.name}, just for a moment.` : "Written on the wind, just for a moment.";
+            finalEl.style.opacity = 1;
+            el.dataset.played = "true";
+        }
+
+        
+        let balloonInterval;
+        function startBalloonGame() {
+            const container = document.getElementById('balloon-container');
+            if(!container) return;
+            
+            clearInterval(balloonInterval);
+            container.innerHTML = ''; 
+            
+            const emojis = ['🎈', '🎉', '✨', '🎁'];
+            
+            balloonInterval = setInterval(() => {
+                const balloon = document.createElement('div');
+                balloon.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+                balloon.classList.add('floating-balloon', 'interactive-el');
+                balloon.style.left = `${Math.random() * 90}%`;
+                balloon.style.animationDuration = `${Math.random() * 4 + 4}s`; 
+                
+                balloon.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    balloon.textContent = '💥';
+                    setTimeout(() => balloon.remove(), 200);
+                    const msg = document.getElementById('balloon-text');
+                    if(msg) msg.textContent = ["Joy", "Smile ", "Fun", "Laugh"][Math.floor(Math.random()*4)];
+                });
+                
+                container.appendChild(balloon);
+                
+                
+                setTimeout(() => {
+                    if(balloon.parentNode) balloon.remove();
+                }, 8000);
+                
+            }, 800);
+        }
+
+        function stopBalloonGame() {
+            clearInterval(balloonInterval);
+            const container = document.getElementById('balloon-container');
+            if(container) container.innerHTML = '';
+        }
+
+        
+        // =====================================================================
+        //  PERSONALIZATION — name + optional photo from the opening screen
+        //  Everything lives in this tab's memory. Nothing is uploaded, and
+        //  nothing is written to localStorage/cookies.
+        // =====================================================================
+        const visitor = { name: '', photoUrl: null };
+        // When the visitor skips the photo, the Mirror of Time keeps showing your original Main.jpg.
+        // Set to false to show a neutral silhouette (with their initial) instead.
+        const USE_MAIN_JPG_FALLBACK = true;
+        const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+        const introScreen  = document.getElementById('intro-screen');
+        const introForm    = document.getElementById('intro-form');
+        const nameInput    = document.getElementById('intro-name');
+        const nameMsg      = document.getElementById('intro-name-msg');
+        const photoInput   = document.getElementById('intro-photo-input');
+        const photoPick    = document.getElementById('intro-photo-pick');
+        const photoChoose  = document.getElementById('intro-photo-choose');
+        const photoRemove  = document.getElementById('intro-photo-remove');
+        const photoPreview = document.getElementById('intro-photo-preview');
+        const photoIcon    = document.getElementById('intro-photo-icon');
+        const photoMsg     = document.getElementById('intro-photo-msg');
+        const mirrorImg    = document.getElementById('mirror-img');
+
+        const NAME_PATTERN = /^[\p{L}\p{M}][\p{L}\p{M}\s'’.\-]*$/u;   // letters/marks (any script), spaces, ' . -
+
+        function validateName(raw) {
+            let name = String(raw || '').replace(/\s+/g, ' ').trim();
+            if (!name) return { ok: false, msg: 'Please tell me your name.' };
+            if (name.length > 30) return { ok: false, msg: 'Names can be up to 30 characters.' };
+            if (!NAME_PATTERN.test(name)) return { ok: false, msg: 'Please use letters, spaces, hyphens or apostrophes only.' };
+            // "sankho" -> "Sankho" (only when everything was typed in lowercase)
+            if (name === name.toLocaleLowerCase()) {
+                name = name.replace(/(^|[\s'’.\-])(\p{L})/gu, (m, sep, ch) => sep + ch.toLocaleUpperCase());
+            }
+            return { ok: true, name };
+        }
+
+        function showNameError(msg) {
+            nameMsg.textContent = msg || '';
+            if (msg) nameInput.setAttribute('aria-invalid', 'true'); else nameInput.removeAttribute('aria-invalid');
+        }
+
+        // Decode -> downscale (max 1000px) -> JPEG blob URL. Keeps memory small and handles EXIF rotation.
+        async function decodeImage(file) {
+            if ('createImageBitmap' in window) {
+                try { return await createImageBitmap(file, { imageOrientation: 'from-image' }); }
+                catch (_) { try { return await createImageBitmap(file); } catch (__) { /* fall through */ } }
+            }
+            const url = URL.createObjectURL(file);
+            try {
+                return await new Promise((resolve, reject) => {
+                    const img = new Image();
+                    img.onload = () => resolve(img);
+                    img.onerror = () => reject(new Error('decode'));
+                    img.src = url;
+                });
+            } finally { URL.revokeObjectURL(url); }
+        }
+
+        async function processPhoto(file) {
+            if (!/^image\/(jpeg|png|webp|gif)$/.test(file.type)) throw new Error('Please choose a JPG, PNG, WebP or GIF image.');
+            if (file.size > 15 * 1024 * 1024) throw new Error('That image is over 15 MB. Please choose a smaller one.');
+            let source;
+            try { source = await decodeImage(file); }
+            catch (_) { throw new Error('That image could not be read. Please try another one.'); }
+            const w = source.naturalWidth || source.width, h = source.naturalHeight || source.height;
+            if (!w || !h) throw new Error('That image could not be read. Please try another one.');
+            const scale = Math.min(1, 1000 / Math.max(w, h));
+            const cv = document.createElement('canvas');
+            cv.width = Math.max(1, Math.round(w * scale)); cv.height = Math.max(1, Math.round(h * scale));
+            const g = cv.getContext('2d');
+            g.fillStyle = '#ffffff'; g.fillRect(0, 0, cv.width, cv.height);   // PNG/GIF transparency -> white, not black
+            g.drawImage(source, 0, 0, cv.width, cv.height);
+            if (typeof source.close === 'function') source.close();
+            const blob = await new Promise((resolve) => cv.toBlob(resolve, 'image/jpeg', 0.9));
+            if (!blob) throw new Error('That image could not be read. Please try another one.');
+            return URL.createObjectURL(blob);
+        }
+
+        function renderPhotoState() {
+            const has = !!visitor.photoUrl;
+            photoPreview.hidden = !has;
+            if (has) photoPreview.src = visitor.photoUrl; else photoPreview.removeAttribute('src');
+            photoIcon.style.display = has ? 'none' : '';
+            photoPick.classList.toggle('has-photo', has);
+            photoPick.setAttribute('aria-label', has ? 'Replace your photo' : 'Choose a photo of yourself');
+            photoChoose.textContent = has ? 'Replace photo' : 'Add a photo';
+            photoRemove.hidden = !has;
+        }
+
+        async function setPhotoFromFile(file) {
+            photoMsg.textContent = '';
+            try {
+                const url = await processPhoto(file);
+                if (visitor.photoUrl) URL.revokeObjectURL(visitor.photoUrl);
+                visitor.photoUrl = url;
+                renderPhotoState();
+            } catch (err) {
+                photoMsg.textContent = err.message;            // the previous photo (if any) stays selected
+            }
+        }
+
+        function clearPhoto() {
+            if (visitor.photoUrl) URL.revokeObjectURL(visitor.photoUrl);
+            visitor.photoUrl = null;
+            photoMsg.textContent = '';
+            renderPhotoState();
+        }
+
+        function mirrorFallbackSrc() {
+            const initial = (Array.from(visitor.name)[0] || '').replace(/[&<>"']/g, '');
+            const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 250 350"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e0eafc"/><stop offset="1" stop-color="#b6c8e4"/></linearGradient></defs><rect width="250" height="350" fill="url(#g)"/><circle cx="125" cy="140" r="46" fill="#304352" opacity=".28"/><path d="M36 350c6-84 48-120 89-120s83 36 89 120z" fill="#304352" opacity=".28"/><text x="125" y="322" text-anchor="middle" font-family="Georgia,serif" font-size="28" fill="#304352" opacity=".7">${initial}</text></svg>`;
+            return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+        }
+        // If the mirror image can't load (e.g. Main.jpg is missing) use the local silhouette — no external placeholder service.
+        mirrorImg.addEventListener('error', () => { if (!mirrorImg.src.startsWith('data:')) mirrorImg.src = mirrorFallbackSrc(); });
+        if (mirrorImg.complete && mirrorImg.naturalWidth === 0) mirrorImg.src = mirrorFallbackSrc();
+
+        function applyPersonalization() {
+            document.querySelectorAll('[data-visitor-name]').forEach((el) => { el.textContent = visitor.name; });
+            document.title = `21 Doors — A Journey Through ${visitor.name}’s Universe`;
+
+            const withPhoto = !!visitor.photoUrl;
+            [['page1-avatar'], ['final-portrait']].forEach(([id]) => {
+                const img = document.getElementById(id);
+                if (!img) return;
+                if (withPhoto) { img.src = visitor.photoUrl; img.alt = `${visitor.name}`; img.hidden = false; } else { img.hidden = true; img.removeAttribute('src'); }
+            });
+            // Mirror of Time: their photo, else the original Main.jpg (or a silhouette).
+            if (withPhoto) { mirrorImg.src = visitor.photoUrl; mirrorImg.alt = `${visitor.name}’s reflection`; }
+            else if (!USE_MAIN_JPG_FALLBACK) mirrorImg.src = mirrorFallbackSrc();
+            // The mirror's final reflection becomes their name.
+            reflections[reflections.length - 1] = `${visitor.name}.`;
+        }
+
+        function personalizeMessage(msg) {
+            if (!visitor.name || !msg) return msg;
+            return `${visitor.name}, ${msg.charAt(0).toLowerCase()}${msg.slice(1)}`;
+        }
+
+        function beginJourney() {
+            applyPersonalization();
+            introScreen.classList.add('is-leaving');
+            introScreen.inert = true;
+            mainContentEl.inert = false;
+            pages[0].querySelectorAll('.poetic-text').forEach((el) => el.classList.add('visible'));   // replay page 1's entrance
+            setTimeout(() => { introScreen.hidden = true; }, 1000);
+        }
+
+        introForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const result = validateName(nameInput.value);
+            if (!result.ok) { showNameError(result.msg); nameInput.focus(); return; }
+            showNameError('');
+            visitor.name = result.name;
+            beginJourney();
+        });
+        nameInput.addEventListener('input', () => { if (nameInput.hasAttribute('aria-invalid')) { const r = validateName(nameInput.value); showNameError(r.ok ? '' : r.msg); } });
+        [photoPick, photoChoose].forEach((btn) => btn.addEventListener('click', () => photoInput.click()));
+        photoRemove.addEventListener('click', clearPhoto);
+        photoInput.addEventListener('change', async () => {
+            const file = photoInput.files && photoInput.files[0];
+            if (file) await setPhotoFromFile(file);
+            photoInput.value = '';                              // lets them pick the same file again
+        });
+        ['dragenter', 'dragover'].forEach((ev) => photoPick.addEventListener(ev, (e) => { e.preventDefault(); photoPick.classList.add('is-dragover'); }));
+        ['dragleave', 'drop'].forEach((ev) => photoPick.addEventListener(ev, (e) => { e.preventDefault(); photoPick.classList.remove('is-dragover'); }));
+        photoPick.addEventListener('drop', (e) => { const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]; if (f) setPhotoFromFile(f); });
+        window.addEventListener('pagehide', () => { if (visitor.photoUrl) URL.revokeObjectURL(visitor.photoUrl); });
+        renderPhotoState();
+        if (!window.matchMedia('(pointer: coarse)').matches) setTimeout(() => nameInput.focus({ preventScroll: true }), 300);
+
+
+        // =====================================================================
+        //  SOLAR SYSTEM — page 12 "The Voice of the Universe"
+        //  A lazy-loaded Three.js scene: textured Sun/Earth/Moon, real lighting.
+        //
+        //  EXTERNAL ASSETS (see README notes in the delivery message):
+        //    • Three.js r160 + post-processing addons  -> jsDelivr CDN (import map in <head>)
+        //    • Planet textures                          -> ./assets/planets/*  first, then the
+        //      three.js examples repo via jsDelivr. If neither loads, procedural textures
+        //      are generated so the scene still renders.
+        //  Nothing here runs until the visitor is one page away from page 12.
+        // =====================================================================
+        const CDN_PLANETS = 'https://cdn.jsdelivr.net/gh/mrdoob/three.js@r160/examples/textures/planets/';
+        const LOCAL_PLANETS = 'assets/planets/';
+        const PLANET_FILES = {
+            earthDay:   'earth_atmos_2048.jpg',
+            earthNight: 'earth_lights_2048.png',
+            earthSpec:  'earth_specular_2048.jpg',
+            clouds:     'earth_clouds_1024.png',
+            moon:       'moon_1024.jpg'
+        };
+
+        // ---- shaders --------------------------------------------------------
+        const GLSL_NOISE = `
+            float hash13(vec3 p) { p = fract(p * 0.3183099 + 0.1); p *= 17.0; return fract(p.x * p.y * p.z * (p.x + p.y + p.z)); }
+            float vnoise(vec3 x) {
+                vec3 i = floor(x); vec3 f = fract(x); f = f * f * (3.0 - 2.0 * f);
+                return mix(mix(mix(hash13(i + vec3(0,0,0)), hash13(i + vec3(1,0,0)), f.x), mix(hash13(i + vec3(0,1,0)), hash13(i + vec3(1,1,0)), f.x), f.y),
+                           mix(mix(hash13(i + vec3(0,0,1)), hash13(i + vec3(1,0,1)), f.x), mix(hash13(i + vec3(0,1,1)), hash13(i + vec3(1,1,1)), f.x), f.y), f.z);
+            }
+            float fbm(vec3 p) { float a = 0.5, s = 0.0; for (int i = 0; i < 5; i++) { s += a * vnoise(p); p *= 2.03; a *= 0.5; } return s; }
+        `;
+        const SUN_VERT = `
+            varying vec3 vObjPos; varying vec3 vNormalV; varying vec3 vViewDir;
+            void main() {
+                vObjPos = position;
+                vec4 mv = modelViewMatrix * vec4(position, 1.0);
+                vNormalV = normalize(normalMatrix * normal);
+                vViewDir = normalize(-mv.xyz);
+                gl_Position = projectionMatrix * mv;
+            }`;
+        const SUN_FRAG = `
+            uniform float uTime; varying vec3 vObjPos; varying vec3 vNormalV; varying vec3 vViewDir;
+            ${GLSL_NOISE}
+            void main() {
+                vec3 p = normalize(vObjPos);
+                float t = uTime * 0.05;
+                float warp = fbm(p * 3.0 + vec3(0.0, t, 0.0));
+                float gran = fbm(p * 7.0 + warp * 1.6 + vec3(t * 2.0, 0.0, -t));      // convection cells
+                float fine = fbm(p * 18.0 + vec3(0.0, -t * 3.0, t));
+                float heat = clamp(gran * 1.25 + fine * 0.25, 0.0, 1.0);
+                float spots = smoothstep(0.60, 0.74, fbm(p * 2.4 + vec3(11.0, t * 0.3, 3.0))) * (1.0 - smoothstep(0.25, 0.6, abs(p.y)));
+                vec3 deep = vec3(0.78, 0.20, 0.02), mid = vec3(1.0, 0.52, 0.10), hot = vec3(1.0, 0.86, 0.45);
+                vec3 col = mix(deep, mid, smoothstep(0.25, 0.6, heat));
+                col = mix(col, hot, smoothstep(0.55, 0.9, heat));
+                col *= 1.0 - spots * 0.65;
+                col += vec3(1.0, 0.8, 0.4) * pow(fine, 3.0) * 0.25;
+                float mu = clamp(dot(normalize(vNormalV), normalize(vViewDir)), 0.0, 1.0);
+                col *= 0.40 + 0.60 * pow(mu, 0.55);                                      // limb darkening
+                gl_FragColor = vec4(col * 1.55, 1.0);                                     // slightly >1.0 feeds the bloom without clipping the granulation
+                #include <tonemapping_fragment>
+                #include <colorspace_fragment>
+            }`;
+        const EARTH_VERT = `
+            varying vec2 vUv; varying vec3 vNormalW; varying vec3 vPosW;
+            void main() {
+                vUv = uv;
+                vNormalW = normalize(mat3(modelMatrix) * normal);
+                vec4 w = modelMatrix * vec4(position, 1.0);
+                vPosW = w.xyz;
+                gl_Position = projectionMatrix * viewMatrix * w;
+            }`;
+        const EARTH_FRAG = `
+            uniform sampler2D uDay; uniform sampler2D uNight; uniform sampler2D uSpec; uniform vec3 uSunDir;
+            varying vec2 vUv; varying vec3 vNormalW; varying vec3 vPosW;
+            void main() {
+                vec3 N = normalize(vNormalW);
+                vec3 V = normalize(cameraPosition - vPosW);
+                vec3 L = normalize(uSunDir);
+                float ndl = dot(N, L);
+                vec3 day = texture2D(uDay, vUv).rgb;
+                vec3 night = texture2D(uNight, vUv).rgb;
+                float ocean = texture2D(uSpec, vUv).r;
+
+                float lit = smoothstep(-0.06, 0.28, ndl);                               // soft terminator
+                vec3 diffuse = day * (0.02 + 1.3 * max(ndl, 0.0));
+                vec3 H = normalize(L + V);
+                diffuse += vec3(1.0, 0.93, 0.82) * pow(max(dot(N, H), 0.0), 90.0) * ocean * smoothstep(0.0, 0.25, ndl) * 0.16;   // sun glint on oceans
+                vec3 lights = night * vec3(1.0, 0.78, 0.5) * 1.7;                        // city lights, night side only
+                vec3 col = mix(lights + day * 0.012, diffuse, lit);
+                float twilight = smoothstep(-0.16, 0.0, ndl) * (1.0 - smoothstep(0.0, 0.30, ndl));
+                col += vec3(1.0, 0.45, 0.2) * twilight * 0.035 * (0.4 + length(day));                          // warm band at the terminator
+                float rim = pow(1.0 - max(dot(N, V), 0.0), 3.0);
+                col += vec3(0.22, 0.50, 1.0) * rim * (0.10 + 1.15 * smoothstep(-0.25, 0.55, ndl));   // atmospheric scattering at the limb
+                gl_FragColor = vec4(col, 1.0);
+                #include <tonemapping_fragment>
+                #include <colorspace_fragment>
+            }`;
+        const ATMO_FRAG = `
+            uniform vec3 uSunDir; uniform float uInner;
+            varying vec3 vNormalW; varying vec3 vPosW;
+            void main() {
+                vec3 n = normalize(vNormalW);
+                vec3 V = normalize(cameraPosition - vPosW);
+                float d = clamp(-dot(n, V), 0.0, 1.0);                                   // back faces: 0 at the outer edge, uInner at the planet's limb
+                float glow = pow(clamp(d / uInner, 0.0, 1.0), 2.4);
+                float sunSide = smoothstep(-0.5, 0.7, dot(n, normalize(uSunDir)));
+                vec3 col = mix(vec3(0.10, 0.25, 0.75), vec3(0.30, 0.62, 1.0), sunSide);
+                gl_FragColor = vec4(col, glow * (0.18 + 1.0 * sunSide));
+                #include <tonemapping_fragment>
+                #include <colorspace_fragment>
+            }`;
+
+        // ---- fallback textures (only used if no texture URL can be loaded) ---------
+        function proceduralTexture(THREE, key) {
+            const w = 512, h = 256;
+            const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+            const g = cv.getContext('2d'); const img = g.createImageData(w, h); const d = img.data;
+            const hash = (x, y, s) => { const n = Math.sin(x * 127.1 + y * 311.7 + s * 74.7) * 43758.5453; return n - Math.floor(n); };
+            const vnoise = (x, y, s, period) => {
+                const xi = Math.floor(x), yi = Math.floor(y), xf = x - xi, yf = y - yi;
+                const u = xf * xf * (3 - 2 * xf), v = yf * yf * (3 - 2 * yf);
+                const wrap = (i) => ((i % period) + period) % period;
+                const a = hash(wrap(xi), yi, s), b = hash(wrap(xi + 1), yi, s), c = hash(wrap(xi), yi + 1, s), e = hash(wrap(xi + 1), yi + 1, s);
+                return a + (b - a) * u + (c - a) * v + (a - b - c + e) * u * v;
+            };
+            const fbm = (u, v, s) => { let sum = 0, amp = 0.5, tot = 0; for (let o = 0; o < 5; o++) { const p = 4 << o; sum += amp * vnoise(u * p, v * p * 0.5, s + o, p); tot += amp; amp *= 0.5; } return sum / tot; };
+            for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+                const u = x / w, v = y / h, i = (y * w + x) * 4;
+                const land = fbm(u, v, 1) > 0.53, polar = Math.abs(v - 0.5) * 2;
+                let r = 0, gg = 0, b = 0, a = 255;
+                if (key === 'earthDay') {
+                    if (polar > 0.9) { r = 235; gg = 240; b = 245; }
+                    else if (land) { const k = fbm(u, v, 4); r = 70 + 90 * k; gg = 110 + 60 * k; b = 50 + 30 * k; }
+                    else { r = 14; gg = 50 + 40 * fbm(u, v, 9); b = 110 + 50 * fbm(u, v, 9); }
+                } else if (key === 'earthNight') {
+                    if (land && polar < 0.8 && fbm(u, v, 7) > 0.56) { r = 255; gg = 200; b = 120; }
+                } else if (key === 'earthSpec') { r = gg = b = land ? 25 : 255; }
+                else if (key === 'clouds') { const c = Math.min(1, Math.max(0, (fbm(u, v, 3) - 0.5) * 4)); r = gg = b = 255; a = 230 * c; }
+                else { const k = 110 + 100 * fbm(u * 2, v * 2, 5); r = gg = b = k; }                  // moon
+                d[i] = r; d[i + 1] = gg; d[i + 2] = b; d[i + 3] = a;
+            }
+            g.putImageData(img, 0, 0);
+            return new THREE.CanvasTexture(cv);
+        }
+
+        // ---- the scene itself (called once Three.js + textures are ready) ---------
+        function buildSolarScene({ THREE, post, textures, mode, canvas, reduced }) {
+            const TAU = Math.PI * 2, deg = THREE.MathUtils.degToRad, lerp = THREE.MathUtils.lerp;
+            const ease = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+            const high = mode === 'high';
+
+            // Scene scale: Earth radius = 1. Distances and the Moon's orbit are deliberately
+            // compressed so all three bodies read clearly in one frame.
+            const MOON_R = 0.2727, SUN_R = 5.0, SUN_DIST = 62;
+            const SUN_DIR = new THREE.Vector3(-0.80, 0.02, -0.60).normalize();       // direction Earth -> Sun
+            const EARTH_W = TAU / 44, CLOUD_W = TAU / 38, MOON_W = TAU / 34;          // rad/sec (compressed time)
+            const AZ_SPAN = deg(100), AZ_PERIOD = 90, ELEV = deg(11);   // camera sweeps AZ_SPAN round the Earth, opening on the Sun
+            const SUN_AZ = Math.atan2(SUN_DIR.x, SUN_DIR.z);              // azimuth of the Sun as seen from Earth
+            let sunViewAz = deg(24);                                      // set per viewport in layout()
+
+            const renderer = new THREE.WebGLRenderer({ canvas, antialias: !post, alpha: false, powerPreference: 'high-performance' });
+            let pixelRatio = Math.min(window.devicePixelRatio || 1, high ? 2 : 1.5);
+            renderer.setPixelRatio(pixelRatio);
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 1.0;
+            renderer.setClearColor(0x02030a, 1);
+            const maxAniso = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+            Object.values(textures).forEach((t) => { if (t && t.isTexture) t.anisotropy = maxAniso; });
+
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 2000);
+
+            // lights: one directional "Sun" + a whisper of blue fill so the night side isn't pure black
+            const sunLight = new THREE.DirectionalLight(0xfff1de, 3.3);
+            sunLight.position.copy(SUN_DIR).multiplyScalar(60);
+            scene.add(sunLight, sunLight.target, new THREE.AmbientLight(0x2a3d6e, 0.6));
+
+            const seg = high ? 128 : 64;
+            const disposables = [];
+            const track = (o) => { disposables.push(o); return o; };
+
+            // Sun
+            const sunMat = track(new THREE.ShaderMaterial({ uniforms: { uTime: { value: 0 } }, vertexShader: SUN_VERT, fragmentShader: SUN_FRAG }));
+            const sun = new THREE.Mesh(track(new THREE.SphereGeometry(SUN_R, seg, seg / 2)), sunMat);
+            sun.position.copy(SUN_DIR).multiplyScalar(SUN_DIST);
+            scene.add(sun);
+            const glowTexture = (stops) => {
+                const c = document.createElement('canvas'); c.width = c.height = 512;
+                const g = c.getContext('2d'); const gr = g.createRadialGradient(256, 256, 0, 256, 256, 256);
+                stops.forEach(([o, col]) => gr.addColorStop(o, col));
+                g.fillStyle = gr; g.fillRect(0, 0, 512, 512);
+                const t = track(new THREE.CanvasTexture(c)); t.colorSpace = THREE.SRGBColorSpace; return t;
+            };
+            const corona = (map, size) => {
+                const s = new THREE.Sprite(track(new THREE.SpriteMaterial({ map, blending: THREE.AdditiveBlending, transparent: true, depthWrite: false })));
+                s.position.copy(sun.position); s.scale.setScalar(size); scene.add(s); return s;
+            };
+            corona(glowTexture([[0, 'rgba(255,226,150,0.85)'], [0.30, 'rgba(255,190,100,0.55)'], [0.45, 'rgba(255,150,60,0.22)'], [0.70, 'rgba(255,110,30,0.05)'], [1, 'rgba(255,90,20,0)']]), SUN_R * 2 * 3.2);
+            corona(glowTexture([[0, 'rgba(255,190,100,0.11)'], [0.25, 'rgba(255,170,80,0.055)'], [0.6, 'rgba(255,140,60,0.016)'], [1, 'rgba(255,120,40,0)']]), SUN_R * 2 * 7);
+
+            // Earth (own shader: day/night blend, ocean glint, city lights, limb scattering)
+            const earthTilt = new THREE.Group(); earthTilt.rotation.z = deg(-23.4); scene.add(earthTilt);
+            const earthMat = track(new THREE.ShaderMaterial({
+                uniforms: { uDay: { value: textures.earthDay }, uNight: { value: textures.earthNight }, uSpec: { value: textures.earthSpec }, uSunDir: { value: SUN_DIR.clone() } },
+                vertexShader: EARTH_VERT, fragmentShader: EARTH_FRAG
+            }));
+            const earth = new THREE.Mesh(track(new THREE.SphereGeometry(1, seg, seg / 2)), earthMat);
+            earthTilt.add(earth);
+            const cloudMat = track(new THREE.MeshLambertMaterial({ map: textures.clouds, transparent: true, opacity: 0.95, depthWrite: false }));
+            const clouds = new THREE.Mesh(track(new THREE.SphereGeometry(1.011, seg, seg / 2)), cloudMat);
+            earthTilt.add(clouds);
+            const ATMO_R = 1.14;
+            const atmoMat = track(new THREE.ShaderMaterial({
+                uniforms: { uSunDir: { value: SUN_DIR.clone() }, uInner: { value: Math.sqrt(1 - (1 / ATMO_R) * (1 / ATMO_R)) } },
+                vertexShader: EARTH_VERT, fragmentShader: ATMO_FRAG, side: THREE.BackSide, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false
+            }));
+            scene.add(new THREE.Mesh(track(new THREE.SphereGeometry(ATMO_R, 64, 32)), atmoMat));
+
+            // Moon on a tilted orbit (tilt keeps it clear of Earth's shadow, so no eclipse is needed).
+            // Tidally locked: it is a child of the rotating pivot, so one face always points at Earth.
+            const orbitTilt = new THREE.Group();
+            orbitTilt.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), new THREE.Vector3(-0.45, 0.85, -0.2).normalize());
+            scene.add(orbitTilt);
+            const moonPivot = new THREE.Group(); orbitTilt.add(moonPivot);
+            const moonMat = track(new THREE.MeshStandardMaterial({ map: textures.moon, bumpMap: textures.moon, bumpScale: 1.5, roughness: 1, metalness: 0 }));
+            const moon = new THREE.Mesh(track(new THREE.SphereGeometry(MOON_R, 64, 32)), moonMat);
+            moonPivot.add(moon);
+            const ringPts = []; for (let i = 0; i <= 160; i++) ringPts.push(new THREE.Vector3(Math.cos(i / 160 * TAU), 0, Math.sin(i / 160 * TAU)));
+            const ring = new THREE.Line(track(new THREE.BufferGeometry().setFromPoints(ringPts)), track(new THREE.LineBasicMaterial({ color: 0xaec6ff, transparent: true, opacity: 0.13 })));
+            orbitTilt.add(ring);
+
+            // Stars: two sparse layers, subtle tints
+            const starMats = [];
+            const makeStars = (count, size, bright) => {
+                const pos = new Float32Array(count * 3), col = new Float32Array(count * 3);
+                for (let i = 0; i < count; i++) {
+                    const u = Math.random() * 2 - 1, th = Math.random() * TAU, r = Math.sqrt(1 - u * u);
+                    pos.set([r * Math.cos(th) * 700, u * 700, r * Math.sin(th) * 700], i * 3);
+                    const m = Math.random(), tint = m < 0.15 ? [0.75, 0.85, 1] : m < 0.3 ? [1, 0.92, 0.78] : [1, 1, 1];
+                    const b = bright * (0.35 + Math.random() * 0.65);
+                    col.set([tint[0] * b, tint[1] * b, tint[2] * b], i * 3);
+                }
+                const geo = track(new THREE.BufferGeometry());
+                geo.setAttribute('position', new THREE.BufferAttribute(pos, 3)); geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+                const mat = track(new THREE.PointsMaterial({ size, sizeAttenuation: false, vertexColors: true, transparent: true, depthWrite: false }));
+                mat.userData.base = size; starMats.push(mat);
+                const pts = new THREE.Points(geo, mat); scene.add(pts); return pts;
+            };
+            const starCount = high ? 1800 : 1000;
+            const starsA = makeStars(starCount, 1.3, 0.8), starsB = makeStars(Math.round(starCount * 0.12), 2.3, 1);
+
+            // Post-processing (high tier only): restrained bloom on the Sun's HDR values
+            let composer = null, bloom = null;
+            const buildComposer = (W, H) => {
+                const rt = new THREE.WebGLRenderTarget(W, H, { type: THREE.HalfFloatType, samples: 4 });
+                composer = new post.EffectComposer(renderer, rt);
+                composer.addPass(new post.RenderPass(scene, camera));
+                bloom = new post.UnrealBloomPass(new THREE.Vector2(W, H), 0.42, 0.5, 1.0);
+                composer.addPass(bloom);
+                composer.addPass(new post.OutputPass());
+            };
+            const dropComposer = () => {
+                if (!composer) return;
+                try { bloom.dispose && bloom.dispose(); composer.renderTarget1.dispose(); composer.renderTarget2.dispose(); composer.dispose && composer.dispose(); } catch (_) { /* ignore */ }
+                composer = null; bloom = null;
+            };
+            if (post) buildComposer(window.innerWidth, window.innerHeight);
+
+            // ---- layout: camera framing for the current viewport ---------------
+            let baseRadius = 9, orbitDist = 2.7;
+            function layout() {
+                const W = Math.max(1, window.innerWidth), H = Math.max(1, window.innerHeight);
+                const desktop = W >= 900;
+                camera.aspect = W / H;
+                camera.fov = desktop ? 38 : 46;
+                orbitDist = desktop ? 2.7 : 2.5;
+                moon.position.x = orbitDist; ring.scale.setScalar(orbitDist);
+                const t = Math.tan(deg(camera.fov / 2));
+                // Desktop: planets sit right of centre, clear of the text column. Phones: planets sit above the text.
+                const cx = desktop ? 0.70 : 0.5;
+                const halfAvail = desktop ? Math.min(cx - 0.34, 1 - cx - 0.02) * W : 0.46 * W;
+                baseRadius = Math.max(8.1, (H / 2) * (orbitDist + MOON_R) / (t * halfAvail));
+                camera.setViewOffset(W, H, -(cx - 0.5) * W, desktop ? 0 : H * 0.17, W, H);
+                camera.updateProjectionMatrix();
+                // Camera azimuth that frames the Sun at screen-x `sx` while Earth sits at `cx` (Earth is then a backlit crescent).
+                const tanHalfW = t * camera.aspect, sx = desktop ? 0.2 : 0.14;
+                const theta = Math.atan(Math.max(0.05, (cx - sx) * 2 * tanHalfW));
+                sunViewAz = SUN_AZ - Math.PI - theta; sunViewAz = Math.atan2(Math.sin(sunViewAz), Math.cos(sunViewAz));
+                renderer.setPixelRatio(pixelRatio);
+                renderer.setSize(W, H, false);
+                if (composer) { composer.setPixelRatio(pixelRatio); composer.setSize(W, H); }
+                starMats.forEach((m) => { m.size = m.userData.base * pixelRatio; });
+            }
+
+            // ---- state + per-frame update --------------------------------------
+            const st = { t: 0, entry: reduced ? 1 : 0, exit: 0, exiting: false, earthSpin: 0.9, cloudSpin: 0, moonAngle: 2.1, focus: null, focusTimer: 0, w: { sun: 0, earth: 0, moon: 0 } };
+            const tmp = new THREE.Vector3(), look = new THREE.Vector3();
+            const api = {
+                reduced,
+                layout,
+                setFocus(name) {
+                    st.focus = name || null; st.focusTimer = 6.5;
+                    if (api.reduced) { Object.keys(st.w).forEach((k) => { st.w[k] = st.focus === k ? 1 : 0; }); api.renderStatic(); }
+                },
+                beginExit() { if (!api.reduced) st.exiting = true; },
+                resetEntry() { st.exiting = false; st.exit = 0; st.entry = api.reduced ? 1 : 0; },
+                update(dt) {
+                    if (!api.reduced) {
+                        st.t += dt; st.earthSpin += dt * EARTH_W; st.cloudSpin += dt * CLOUD_W; st.moonAngle += dt * MOON_W;
+                        sunMat.uniforms.uTime.value += dt; sun.rotation.y += dt * 0.02; starsA.rotation.y += dt * 0.0015; starsB.rotation.y += dt * 0.0015;
+                        if (st.entry < 1) st.entry = Math.min(1, st.entry + dt / 3.4);
+                        if (st.exiting) st.exit = Math.min(1, st.exit + dt / 1.2);
+                        if (st.focus) { st.focusTimer -= dt; if (st.focusTimer <= 0) st.focus = null; }
+                        const k = 1 - Math.exp(-dt * 2.2);
+                        Object.keys(st.w).forEach((key) => { st.w[key] += ((st.focus === key ? 1 : 0) - st.w[key]) * k; });
+                    }
+                    earth.rotation.y = st.earthSpin; clouds.rotation.y = st.cloudSpin;
+                    moonPivot.rotation.y = st.moonAngle;
+                    moonPivot.updateWorldMatrix(true, true); moon.getWorldPosition(tmp);
+
+                    const ent = ease(st.entry);
+                    // Opens at the Sun view (phase 0), eases round to the lit day side, and back again.
+                    const sweepAz = sunViewAz - AZ_SPAN * 0.5 * (1 - Math.cos(st.t * TAU / AZ_PERIOD));
+                    const az = lerp(sweepAz, sunViewAz, st.w.sun) - (1 - ent) * 0.5;
+                    let r = baseRadius * (1 + 0.9 * (1 - ent)) * lerp(1, 0.82, st.w.moon) * lerp(1, 0.78, st.w.earth) * lerp(1, 0.92, st.w.sun);
+                    r *= 1 - 0.45 * st.exit * st.exit;
+                    look.copy(tmp).multiplyScalar(0.55 * st.w.moon);
+                    camera.position.set(Math.sin(az) * Math.cos(ELEV) * r, Math.sin(ELEV) * r + Math.sin(st.t * 0.4) * 0.05 * r * 0.1, Math.cos(az) * Math.cos(ELEV) * r);
+                    camera.lookAt(look);
+                },
+                render() { if (composer) composer.render(); else renderer.render(scene, camera); },
+                renderStatic() { api.update(0); api.render(); },
+                seek(t) { st.t = t; st.entry = 1; api.update(0); api.render(); },     // debug/testing aid
+                advance(sec) { for (let i = 0; i < Math.round(sec / 0.05); i++) api.update(0.05); api.render(); },   // debug/testing aid
+                degrade() { dropComposer(); pixelRatio = 1; layout(); },
+                get hasComposer() { return !!composer; },
+                get earthRotY() { return earth.rotation.y; },
+                get moonAngle() { return st.moonAngle; },
+                renderer,
+                dispose() {
+                    dropComposer();
+                    disposables.forEach((o) => { try { o.dispose(); } catch (_) { /* ignore */ } });
+                    Object.values(textures).forEach((t) => { if (t && t.isTexture) t.dispose(); });   // frees GPU copies; images stay cached for a re-entry
+                    renderer.dispose(); renderer.forceContextLoss();
+                }
+            };
+            layout();
+            return api;
+        }
+
+        // ---- lifecycle manager: lazy loading, tiers, loop, resize, context loss ----
+        const solar = (() => {
+            const stage = document.getElementById('solar-stage');
+            const loadingEl = document.getElementById('solar-loading');
+            const reduceMQ = window.matchMedia('(prefers-reduced-motion: reduce)');
+            const params = new URLSearchParams(location.search);
+            const forcedMode = ['high', 'medium', 'lite'].includes(params.get('solar')) ? params.get('solar') : null;
+
+            let mode = null, phase = 'idle', epoch = 0, visible = false;
+            let assetsPromise = null, handle = null, canvasEl = null, cleanupCanvas = null;
+            let loopOn = false, lastNow = 0, frames = 0, rendererCount = 0;
+            let exitTimer = 0, disposeTimer = 0, lostTimer = 0, contextLost = false, resizeBound = false, resizeQueued = false;
+            let perf = { skip: 20, n: 0, sum: 0, step: 0 };
+            const textureSources = {};
+
+            const setPhase = (p) => { phase = p; stage.dataset.phase = p; };
+
+            function webglAvailable() {
+                try {
+                    const c = document.createElement('canvas');
+                    const gl = c.getContext('webgl2') || c.getContext('webgl');
+                    if (!gl) return false;
+                    const lose = gl.getExtension('WEBGL_lose_context'); if (lose) lose.loseContext();
+                    return true;
+                } catch (_) { return false; }
+            }
+            function chooseMode() {
+                if (forcedMode) return forcedMode;
+                if (!webglAvailable()) return 'lite';
+                const nav = navigator, cores = nav.hardwareConcurrency || 4, mem = nav.deviceMemory || 4;
+                if ((nav.connection && nav.connection.saveData) || mem <= 1) return 'lite';   // data-saver or <=1 GB RAM
+                const coarse = window.matchMedia('(pointer: coarse)').matches;   // low core counts still get the 3D scene; the FPS monitor in tick() drops to lite if it really is slow
+                return (!coarse && window.innerWidth >= 1024 && cores >= 4 && mem >= 4) ? 'high' : 'medium';
+            }
+            const ensureMode = () => (mode || (mode = chooseMode()));
+
+            async function loadLibs() {
+                const THREE = await import('three');
+                let post = null;
+                if (mode === 'high') {
+                    try {
+                        const [ec, rp, ub, op] = await Promise.all([
+                            import('three/addons/postprocessing/EffectComposer.js'), import('three/addons/postprocessing/RenderPass.js'),
+                            import('three/addons/postprocessing/UnrealBloomPass.js'), import('three/addons/postprocessing/OutputPass.js')
+                        ]);
+                        post = { EffectComposer: ec.EffectComposer, RenderPass: rp.RenderPass, UnrealBloomPass: ub.UnrealBloomPass, OutputPass: op.OutputPass };
+                    } catch (err) { console.warn('[solar] bloom add-ons unavailable, continuing without bloom', err); }
+                }
+                return { THREE, post };
+            }
+            async function loadTextures(THREE) {
+                const loader = new THREE.TextureLoader(); loader.setCrossOrigin('anonymous');
+                const out = {};
+                await Promise.all(Object.keys(PLANET_FILES).map(async (key) => {
+                    let tex = null;
+                    for (const url of [LOCAL_PLANETS + PLANET_FILES[key], CDN_PLANETS + PLANET_FILES[key]]) {
+                        try { tex = await loader.loadAsync(url); textureSources[key] = url; break; } catch (_) { /* try next source */ }
+                    }
+                    if (!tex) { tex = proceduralTexture(THREE, key); textureSources[key] = 'procedural'; console.warn(`[solar] texture "${key}" not found; using a generated placeholder`); }
+                    tex.colorSpace = key === 'earthSpec' ? THREE.NoColorSpace : THREE.SRGBColorSpace;
+                    out[key] = tex;
+                }));
+                return out;
+            }
+            function ensureAssets() {
+                if (!assetsPromise) {
+                    assetsPromise = (async () => { const libs = await loadLibs(); const textures = await loadTextures(libs.THREE); return { ...libs, textures }; })()
+                        .catch((err) => { assetsPromise = null; throw err; });
+                }
+                return assetsPromise;
+            }
+
+            // -- resize: attached only while the scene is on screen
+            function onResize() {
+                if (resizeQueued) return; resizeQueued = true;
+                requestAnimationFrame(() => { resizeQueued = false; if (!handle) return; handle.layout(); if (!loopOn) handle.render(); });
+            }
+            function attachResize() { if (!resizeBound) { window.addEventListener('resize', onResize); window.addEventListener('orientationchange', onResize); resizeBound = true; } }
+            function detachResize() { if (resizeBound) { window.removeEventListener('resize', onResize); window.removeEventListener('orientationchange', onResize); resizeBound = false; } }
+
+            // -- the loop is the page's existing one: we just register a per-frame hook
+            function tick(now) {
+                if (!handle) return;
+                const dt = lastNow ? Math.min(0.05, (now - lastNow) / 1000) : 0.016; lastNow = now;
+                try { handle.update(dt); handle.render(); }
+                catch (err) { console.error('[solar] render failed, switching to the lite scene', err); disposeScene(); if (visible) showLite(); return; }
+                frames++;
+                if (!forcedMode && perf.step < 2) {                       // one-time quality adaptation on slow GPUs
+                    if (perf.skip > 0) { perf.skip--; return; }
+                    perf.sum += dt; perf.n++;
+                    if (perf.n === 60) {
+                        const avg = perf.sum / perf.n; perf.n = 0; perf.sum = 0;
+                        if (avg > 0.04 && perf.step === 0) { handle.degrade(); perf.step = 1; perf.skip = 20; }
+                        else if (avg > 0.045 && perf.step === 1) { disposeScene(); if (visible) showLite(); }
+                        else perf.step = 2;
+                    }
+                }
+            }
+            function startLoop() {
+                if (!handle) return;
+                attachResize();
+                handle.reduced = reduceMQ.matches;
+                if (handle.reduced) { handle.renderStatic(); return; }     // reduced motion: one still frame, no loop
+                if (loopOn) return;
+                loopOn = true; lastNow = 0; frameHooks.add(tick);
+            }
+            function stopLoop() { frameHooks.delete(tick); loopOn = false; detachResize(); }
+            reduceMQ.addEventListener('change', () => { if (handle && visible) { stopLoop(); startLoop(); } });
+
+            function build(assets) {
+                canvasEl = document.createElement('canvas');
+                stage.insertBefore(canvasEl, stage.firstChild);
+                const onLost = (e) => { e.preventDefault(); contextLost = true; clearTimeout(lostTimer); lostTimer = setTimeout(() => { if (contextLost && visible) { disposeScene(); showLite(); } }, 4000); };
+                const onRestored = () => { contextLost = false; clearTimeout(lostTimer); if (handle) { handle.layout(); handle.render(); } };
+                canvasEl.addEventListener('webglcontextlost', onLost);
+                canvasEl.addEventListener('webglcontextrestored', onRestored);
+                cleanupCanvas = () => { clearTimeout(lostTimer); contextLost = false; canvasEl.removeEventListener('webglcontextlost', onLost); canvasEl.removeEventListener('webglcontextrestored', onRestored); canvasEl.remove(); canvasEl = null; };
+                handle = buildSolarScene({ THREE: assets.THREE, post: assets.post, textures: assets.textures, mode, canvas: canvasEl, reduced: reduceMQ.matches });
+                rendererCount++;
+                perf = { skip: 20, n: 0, sum: 0, step: 0 };
+            }
+            function disposeScene() {
+                if (!handle) return;
+                stopLoop();
+                try { handle.dispose(); } catch (_) { /* ignore */ }
+                handle = null;
+                if (cleanupCanvas) { cleanupCanvas(); cleanupCanvas = null; }
+                setPhase('idle');
+            }
+            function showLite() {
+                stage.classList.add('is-lite', 'is-live'); loadingEl.hidden = true; setPhase('lite');
+            }
+
+            async function enter() {
+                const myEpoch = ++epoch; visible = true;
+                clearTimeout(exitTimer); clearTimeout(disposeTimer);
+                if (ensureMode() === 'lite') { showLite(); return; }
+                stage.classList.remove('is-lite');
+                if (handle) { handle.resetEntry(); startLoop(); setPhase('live'); stage.classList.add('is-live'); return; }
+                setPhase('loading'); loadingEl.hidden = false;
+                try {
+                    const assets = await ensureAssets();
+                    if (myEpoch !== epoch) return;                          // they moved on while we were loading
+                    build(assets);
+                    handle.update(0); handle.render();                      // first frame is ready before the fade-in starts
+                    startLoop();
+                    clearParticles();                                       // the 2D star field is hidden behind the scene
+                    setPhase('live'); loadingEl.hidden = true; stage.classList.add('is-live');
+                } catch (err) {
+                    console.warn('[solar] using the lite scene:', err);
+                    if (myEpoch === epoch) showLite();
+                }
+            }
+            function leave() {
+                visible = false; epoch++;
+                stage.classList.remove('is-live'); loadingEl.hidden = true;
+                if (!handle) { if (phase !== 'lite') setPhase('idle'); return; }
+                handle.beginExit();
+                exitTimer = setTimeout(() => { if (!visible) { stopLoop(); setPhase('paused'); } }, 1300);
+                disposeTimer = setTimeout(() => { if (!visible) disposeScene(); }, 12000);   // free the GPU if they don't come back
+            }
+            function preload() {
+                if (ensureMode() === 'lite' || assetsPromise) return;
+                const go = () => ensureAssets().catch(() => { /* handled on enter */ });
+                if ('requestIdleCallback' in window) requestIdleCallback(go, { timeout: 2500 }); else setTimeout(go, 400);
+            }
+            function focus(name) { if (handle) handle.setFocus(name); }
+
+            // Read-only debug handle (used for testing; safe to delete).
+            window.__doors21 = { solar: {
+                get phase() { return phase; }, get mode() { return mode; }, get frames() { return frames; }, get rendererCount() { return rendererCount; },
+                get textureSources() { return { ...textureSources }; }, get earthRotY() { return handle ? handle.earthRotY : null; },
+                get moonAngle() { return handle ? handle.moonAngle : null; }, get hasBloom() { return handle ? handle.hasComposer : null; },
+                get loopOn() { return loopOn; }, get canvas() { return canvasEl; }, seek(t) { if (handle) handle.seek(t); }, advance(sec) { if (handle) handle.advance(sec); }
+            } };
+            return { preload, enter, leave, focus };
+        })();
+
+        function goToPage(newPageIndex) {
+            if (newPageIndex < 0 || newPageIndex >= pages.length) return;
+            const oldPageIndex = currentPage;
+            if (newPageIndex === oldPageIndex) return; 
+            if (whisperTimeout) clearTimeout(whisperTimeout);
+            
+            
+            if(pages[oldPageIndex].id === 'page-18') stopBalloonGame();
+            if(pages[oldPageIndex].id === 'page-12') solar.leave();
+
+            currentPage = newPageIndex;
+            pages.forEach((page, index) => {
+                page.classList.remove('page-active', 'page-previous');
+                if (index === newPageIndex) {
+                    page.classList.add('page-active');
+                    page.querySelectorAll('.poetic-text').forEach(el => el.classList.remove('visible')); 
+                    setTimeout(() => page.querySelectorAll('.poetic-text').forEach(el => el.classList.add('visible')), 500); 
+                } else if (index === oldPageIndex) {
+                    page.classList.add('page-previous');
+                    page.querySelectorAll('.poetic-text').forEach(el => el.classList.remove('visible'));
+                }
+            });
+            runPageLogic(pages[newPageIndex].id);
+        }
+
+        function runPageLogic(pageId) {
+            clearParticles();
+            if (pageGradients[pageId]) {
+                document.body.style.background = pageGradients[pageId];
+            } else {
+                document.body.style.background = '#0c0a18'; 
+            }
+            
+            switch(pageId) {
+                case 'page-1': createStars(100); break;
+                case 'page-2': createMoonAndStars(); animateStarWhispers(); break;
+                case 'page-3': spawnWishes(); break;
+                case 'page-6':
+                    const skyMessageEl = document.getElementById('sky-message');
+                    if(skyMessageEl) {
+                        if(skyMessageEl.dataset.played !== "true") {
+                            skyMessageEl.textContent = '';
+                            document.getElementById('sky-final').style.opacity = 0; 
+                            animateSkyText();
+                        }
+                    }
+                    break;
+                case 'page-9':
+                    const bridgeText = document.getElementById('bridge-text');
+                    if(bridgeText) { bridgeText.style.opacity = 0; bridgeText.textContent = ''; }
+                    break;
+                case 'page-10':
+                    createRain(150); 
+                    const rainText = document.getElementById('rain-text');
+                    if(rainText) { rainText.style.opacity = 0; rainText.textContent = ''; }
+                    break;
+                case 'page-11':
+                    solar.preload();   // fetch Three.js + textures in the background, one page before they're needed
+                    break;
+                case 'page-12':
+                    createStars(200);  // shown while the 3D scene loads, and as the lite fallback's backdrop
+                    const universeText = document.getElementById('universe-text');
+                    if(universeText) { universeText.style.opacity = 0; universeText.textContent = ''; }
+                    document.querySelectorAll('#page-12 .solar-chip').forEach(c => c.setAttribute('aria-pressed', 'false'));
+                    solar.enter();
+                    break;
+                case 'page-13':
+                    
+                    createStars(50);
+                    const bfText = document.getElementById('butterfly-text');
+                    if(bfText) { bfText.textContent = ''; }
+                    break;
+                case 'page-14':
+                    const poemContainer = document.getElementById('poem-container');
+                    if(poemContainer) poemContainer.innerHTML = '';
+                    poemIndex = 0; 
+                    break;
+                case 'page-15':
+                    
+                    const wText = document.getElementById('window-text');
+                    if(wText) { wText.textContent = "Look closer..."; }
+                    break;
+                case 'page-16':
+                    
+                    const env = document.querySelector('.envelope');
+                    if(env) env.classList.remove('open');
+                    break;
+                case 'page-17':
+                    
+                    break;
+                 case 'page-18':
+                    startBalloonGame();
+                    break;
+                case 'page-19':
+                    const secretText = document.getElementById('secret-text');
+                    if(secretText) { secretText.style.opacity = 0; secretText.textContent = ''; }
+                    break;
+                case 'page-21': createStars(150); break;
+                case 'page-22': createConfetti(200); break;
+                default: break;
+            }
+        }
+        
+        document.getElementById('door-of-light').addEventListener('click', async () => {
+            try {
+                if(bgMusic.src) await bgMusic.play();
+            } catch(e) { console.log("Audio play failed or no source:", e); }
+            
+            const page1 = document.getElementById('page-1');
+            page1.classList.add('page-zooming-out');
+            setTimeout(() => { goToPage(1); page1.classList.remove('page-zooming-out'); }, 1200); 
+        });
+        
+        
+        const starWhisper = document.getElementById('star-whisper');
+        const whispers = ["A whisper of magic...", "A new chapter.", "A universe of possibility.", "A story just beginning.", "The universe aligns."];
+        let whisperIndex = 0;
+        function animateStarWhispers() {
+            if (currentPage !== 1) return; 
+            whisperIndex = (whisperIndex + 1) % whispers.length;
+            if (starWhisper) {
+                starWhisper.style.opacity = 0;
+                setTimeout(() => {
+                    starWhisper.textContent = whispers[whisperIndex];
+                    starWhisper.style.opacity = 1;
+                }, 500); 
+            }
+            whisperTimeout = setTimeout(animateStarWhispers, 3000);
+        }
+        function createMoonAndStars() { createStars(20); if(starWhisper) starWhisper.textContent = whispers[0]; }
+        
+        
+        function spawnWishes() { 
+            const container = document.getElementById('page-3');
+            if (!container) return; 
+            container.querySelectorAll('.wish').forEach(w => w.remove()); 
+            container.querySelectorAll('.text-wish').forEach(w => w.remove()); 
+            const textWishes = [
+                "To climb a mountain", "To see the northern lights", "To become a professional shooter",
+                "To learn a new language", "To become the cure", "To find a quiet moment",
+                "To dance in the rain", "Read a life-changing book", "To feel true peace",
+                "To inspire someone", "World Tour", "To always be curious",
+                "To see the good in people", "To be brave", "To love deeply", "Eat Squid ",
+                "To create something beautiful", "To travel the world", "To find my own magic",
+                "To never stop dreaming", "To draw canvas"
+            ];
+            const emojiSymbols = ['✨', '💖', '🌸', '🌺', '🌟']; 
+            for(let i = 0; i < textWishes.length; i++) {
+                const wish = document.createElement('div');
+                wish.classList.add('text-wish');
+                wish.textContent = textWishes[i];
+                wish.style.left = `${Math.random() * 90 + 5}vw`; 
+                wish.style.top = `${Math.random() * -100 - 50}px`; 
+                const duration = Math.random() * 15 + 15; 
+                const delay = Math.random() * 20; 
+                wish.style.animation = `fallSlowly ${duration}s linear ${delay}s infinite`;
+                wish.style.fontSize = `${Math.random() * 0.5 + 0.8}rem`; 
+                container.appendChild(wish);
+            }
+            for(let i = 0; i < 25; i++) {
+                const wish = document.createElement('div');
+                wish.classList.add('wish');
+                wish.textContent = emojiSymbols[i % emojiSymbols.length];
+                wish.style.left = `${Math.random() * 100}vw`;
+                wish.style.top = `${Math.random() * -100 - 50}px`;
+                const duration = Math.random() * 10 + 10; 
+                const delay = Math.random() * 15; 
+                wish.style.animation = `fallSlowly ${duration}s linear ${delay}s infinite`;
+                wish.style.fontSize = `${Math.random() * 1 + 1}rem`; 
+                wish.style.opacity = `${Math.random() * 0.3 + 0.5}`; 
+                container.appendChild(wish);
+            }
+        }
+        
+        
+        const mirrorText = document.getElementById('mirror-text');
+        const reflections = ["Kindness", "Strength", "Wonder", "A universe within.", "You."];
+        let reflectionIndex = 0;
+        const mirror = document.getElementById('mirror');
+        if (mirror) {
+            mirror.addEventListener('click', () => {
+                reflectionIndex = (reflectionIndex + 1) % reflections.length;
+                if(mirrorText) {
+                    mirrorText.style.opacity = 0;
+                    setTimeout(() => { mirrorText.textContent = reflections[reflectionIndex]; mirrorText.style.opacity = 1; }, 500);
+                }
+            });
+        }
+        
+        
+        const bookContents = [
+            "Your kindness isn't just polite, it is a warmth that heals everyone around you.",
+            "You carry a resilience that makes even the hardest mountains look like stepping stones.",
+            "Your mind is a garden where beautiful ideas are always blooming.",
+            "The way you listen makes people feel truly seen, heard, and understood.",
+            "Your spirit is a rare, beautiful mix of gentle compassion and fierce strength."
+        ];
+
+        document.querySelectorAll('#page-7 .book').forEach((book, index) => {
+            book.addEventListener('click', (e) => {
+                e.stopPropagation(); 
+                
+                document.querySelectorAll('#page-7 .book').forEach(b => {
+                    if(b !== book) {
+                        b.textContent = '';
+                        b.classList.remove('open');
+                    }
+                });
+
+                if (!book.classList.contains('open')) {
+                    book.textContent = bookContents[index % bookContents.length];
+                    book.classList.add('open');
+                } else {
+                    book.textContent = '';
+                    book.classList.remove('open');
+                }
+            });
+        });
+        
+        
+        const clockFace = document.getElementById('clock-face');
+        const clockThought = document.getElementById('clock-thought');
+        const jokes = [
+            "At one, the world is quiet, but her glow is still awake.", 
+            "At two, even the moon pauses, softened by her presence.", 
+            "At three, dreams borrow their colours from her calm.",
+            "At four, the early winds whisper her name like a blessing.", 
+            "At five, the first light rises slowly, as if learning from her grace",
+            "At five, the first light rises slowly, as if learning from her grace", 
+            "At five, the first light rises slowly, as if learning from her grace",
+            "At eight, the hours align, drawn toward her quiet strength.", 
+            "At nine, time itself seems softer, as if shaped by her smile.",
+            "At ten, the world steadies—because her presence feels like balance.", 
+            "At eleven, the day glows brighter, carrying traces of her light.",
+            "At twelve, even time pauses… as if she is the moment worth stopping for." 
+        ];
+        if (clockFace) {
+            clockFace.innerHTML = '';
+            const center = document.createElement('div');
+            center.className = 'absolute top-1/2 left-1/2 w-3 h-3 bg-white rounded-full transform -translate-x-1/2 -translate-y-1/2 shadow-lg z-10 pointer-events-none';
+            clockFace.appendChild(center);
+            const handH = document.createElement('div');
+            handH.className = 'absolute top-1/2 left-1/2 w-1 bg-gray-300 origin-bottom rounded pointer-events-none';
+            handH.style.height = '50px'; handH.style.transform = 'translateX(-50%) translateY(-100%) rotate(140deg)';
+            clockFace.appendChild(handH);
+            const handM = document.createElement('div');
+            handM.className = 'absolute top-1/2 left-1/2 w-1 bg-white origin-bottom rounded pointer-events-none shadow-sm';
+            handM.style.height = '75px'; handM.style.animation = 'handRotate 60s linear infinite'; 
+            clockFace.appendChild(handM);
+            for (let h = 1; h <= 12; h++) {
+                const hourEl = document.createElement('div');
+                hourEl.classList.add('clock-hour', 'interactive-el', 'font-bold');
+                hourEl.textContent = h;
+                const angleDeg = (h * 30) - 90;
+                const angleRad = angleDeg * (Math.PI / 180);
+                const radius = 85; 
+                hourEl.style.left = `calc(50% + ${radius * Math.cos(angleRad)}px)`;
+                hourEl.style.top = `calc(50% + ${radius * Math.sin(angleRad)}px)`;
+                hourEl.style.transform = 'translate(-50%, -50%)'; 
+                hourEl.addEventListener('click', (e) => {
+                    e.stopPropagation(); 
+                    if (clockThought) {
+                        clockThought.style.opacity = 0;
+                        setTimeout(() => { clockThought.textContent = jokes[h - 1]; clockThought.style.opacity = 1; }, 300);
+                    }
+                    hourEl.style.color = '#f0e68c'; hourEl.style.transform = 'translate(-50%, -50%) scale(1.5)';
+                    setTimeout(() => { hourEl.style.color = ''; hourEl.style.transform = 'translate(-50%, -50%) scale(1)'; }, 300);
+                });
+                clockFace.appendChild(hourEl);
+            }
+        }
+        
+        
+        const bridgeText = document.getElementById('bridge-text');
+        document.querySelectorAll('.bridge-stone').forEach(stone => {
+            stone.addEventListener('click', (e) => {
+                e.stopPropagation(); 
+                const msg = stone.getAttribute('data-msg');
+                if(bridgeText) {
+                    bridgeText.style.opacity = 0;
+                    bridgeText.style.transform = "translateY(10px)";
+                    setTimeout(() => { bridgeText.textContent = msg; bridgeText.style.opacity = 1; bridgeText.style.transform = "translateY(0)"; }, 300);
+                }
+            });
+        });
+
+        const rainText = document.getElementById('rain-text');
+        document.querySelectorAll('.rain-drop').forEach(drop => {
+            drop.addEventListener('click', (e) => {
+                e.stopPropagation(); 
+                const msg = drop.getAttribute('data-msg');
+                if(rainText) {
+                    rainText.style.opacity = 0;
+                    rainText.style.transform = "translateY(10px)";
+                    setTimeout(() => { rainText.textContent = msg; rainText.style.opacity = 1; rainText.style.transform = "translateY(0)"; }, 300);
+                }
+            });
+        });
+        
+        const universeText = document.getElementById('universe-text');
+        document.querySelectorAll('.cosmic-body').forEach(body => {
+            body.addEventListener('click', (e) => {
+                e.stopPropagation(); 
+                const msg = personalizeMessage(body.getAttribute('data-msg'));
+                document.querySelectorAll('#page-12 .solar-chip').forEach(c => c.setAttribute('aria-pressed', String(c === body)));
+                solar.focus(body.dataset.focus);   // camera glides toward the Sun / Earth / Moon
+                if(universeText) {
+                    universeText.style.opacity = 0;
+                    universeText.style.transform = "translateY(10px)";
+                    setTimeout(() => { universeText.textContent = msg; universeText.style.opacity = 1; universeText.style.transform = "translateY(0)"; }, 300);
+                }
+            });
+        });
+
+        const flyingButterfly = document.getElementById('flying-butterfly');
+        const butterflyMessages = ["Growth", "Grace", "Effect", "Transformation", "Freedom"];
+        if(flyingButterfly) {
+            flyingButterfly.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const bfText = document.getElementById('butterfly-text');
+                if(bfText) {
+                    const msg = butterflyMessages[Math.floor(Math.random() * butterflyMessages.length)];
+                    bfText.textContent = msg;
+                    bfText.style.opacity = 1;
+                    
+                    const currentDuration = parseFloat(getComputedStyle(flyingButterfly).animationDuration);
+                    if(currentDuration > 2) flyingButterfly.style.animationDuration = (currentDuration - 2) + 's';
+                }
+            });
+        }
+
+        const page13Next = document.getElementById('page-13-next');
+        if(page13Next) {
+            page13Next.addEventListener('click', (e) => {
+                e.stopPropagation();
+                goToPage(currentPage + 1);
+            });
+        }
+        
+        const silentPoemLines = ["You are, As pretty as a picture hanging from a fixture,", "Strong like a family, strong as evryone wanna be,", "Bright as day, as light as air,", "As hard as nails, as grand as a universe."];
+        let poemIndex = 0;
+        let isTypingPoem = false; 
+        const quillBtn = document.getElementById('quill-btn');
+        if(quillBtn) {
+            quillBtn.addEventListener('click', async (e) => {
+                 e.stopPropagation();
+                 if (isTypingPoem) return; 
+                 if(poemIndex < silentPoemLines.length) {
+                     isTypingPoem = true; 
+                     const line = document.createElement('p');
+                     line.textContent = ''; 
+                     line.className = "poem-line text-xl md:text-2xl text-white font-display min-h-[2rem]"; 
+                     line.classList.add('typing-cursor');
+                     document.getElementById('poem-container').appendChild(line);
+                     line.scrollIntoView({ behavior: "smooth", block: "end" });
+                     await typeLine(line, silentPoemLines[poemIndex], 50);
+                     line.classList.remove('typing-cursor');
+                     poemIndex++;
+                     isTypingPoem = false; 
+                 }
+            });
+        }
+        
+        const envelopeContainer = document.getElementById('letter-envelope');
+        if(envelopeContainer) {
+            envelopeContainer.addEventListener('click', (e) => {
+                e.stopPropagation();
+                document.querySelector('.envelope').classList.toggle('open');
+            });
+        }
+        
+        let currentCompassRotation = 0; 
+        const compass = document.getElementById('compass');
+        if(compass) {
+            compass.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const needle = document.getElementById('compass-needle');
+                const mapText = document.getElementById('map-text');
+                
+                
+                const randomSpin = Math.floor(Math.random() * 720 + 360);
+                currentCompassRotation += randomSpin;
+                
+                
+                const remainder = currentCompassRotation % 90;
+                if(remainder !== 0) {
+                    currentCompassRotation += (90 - remainder);
+                }
+                
+                needle.style.transform = `translate(-50%, -50%) rotate(${currentCompassRotation}deg)`;
+                
+                setTimeout(() => {
+                    const normalized = currentCompassRotation % 360;
+                    let direction = "";
+                    
+                    if (normalized === 0 || normalized === 360) direction = "North: Follow your own star.";
+                    else if (normalized === 90) direction = "East: New beginnings await.";
+                    else if (normalized === 180) direction = "South: Warmth and passion.";
+                    else if (normalized === 270) direction = "West: Rest and reflection.";
+                    else direction = "North: Follow your own star."; 
+                    
+                    if(mapText) mapText.textContent = direction;
+                }, 2500); 
+            });
+        }
+
+        const secretText = document.getElementById('secret-text');
+        document.querySelectorAll('.secret-code').forEach(el => {
+            el.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const msg = el.getAttribute('data-decoded');
+                if(secretText) {
+                    secretText.style.opacity = 0;
+                    secretText.style.transform = "translateY(10px)";
+                    setTimeout(() => { secretText.textContent = msg; secretText.style.opacity = 1; secretText.style.transform = "translateY(0)"; }, 300);
+                }
+            });
+        });
+
+        const page10 = document.getElementById('page-10');
+        if (page10) {
+            page10.addEventListener('click', (e) => {
+                if (e.target.closest('.interactive-el')) return; 
+                const rainWord = document.createElement('div');
+                rainWord.textContent = ['Peace', 'Clarity', 'Calm', 'Hope'][Math.floor(Math.random() * 4)];
+                rainWord.className = 'absolute text-lg text-white opacity-0';
+                rainWord.style.left = `${e.clientX}px`;
+                rainWord.style.top = `${e.clientY}px`;
+                rainWord.style.animation = 'fadeOut 2s forwards';
+                const container = document.getElementById('rain-word-container');
+                if (container) { container.appendChild(rainWord); }
+                setTimeout(() => rainWord.remove(), 2000);
+            });
+        }
+        
+        const giftBox = document.getElementById('gift-box');
+        const giftQuote = document.getElementById('gift-quote');
+        const bouquet = document.getElementById('bouquet');
+        if (giftBox) {
+            giftBox.addEventListener('click', () => {
+                giftBox.style.display = 'none';
+                if (bouquet) { bouquet.classList.remove('hidden'); }
+                if (giftQuote) { giftQuote.textContent = "The gift of the present moment."; giftQuote.style.opacity = 1; }
+                for (let i = 0; i < 50; i++) {
+                    const x = canvas.width / 2; const y = canvas.height / 2;
+                    const vx = (Math.random() - 0.5) * 10; const vy = (Math.random() - 0.5) * 10;
+                    const color = `hsl(${Math.random() * 360}, 100%, 70%)`;
+                    particles.push(new Particle(x, y, vx, vy, Math.random() * 3 + 2, color, 100));
+                }
+            }, { once: true });
+        }
+
+        const secretMessage = document.getElementById('secret-message');
+        if (secretMessage) {
+            secretMessage.addEventListener('click', () => {
+                const current = secretMessage.textContent.trim();
+                const decoded = secretMessage.dataset.decoded;
+                const scrambled = secretMessage.dataset.scrambled;
+                secretMessage.textContent = (current === decoded) ? scrambled : decoded;
+                secretMessage.style.color = (current === decoded) ? '#4286f4' : '#00ff7f';
+                secretMessage.style.textShadow = (current === decoded) ? '0 0 10px #4286f4' : '0 0 10px #00ff7f';
+            });
+        }
+
+        const finalDoor = document.getElementById('final-door');
+        if (finalDoor) {
+            finalDoor.addEventListener('click', (e) => { 
+                e.stopPropagation();
+                const page21 = document.getElementById('page-21');
+                page21.classList.add('page-zooming-out');
+                setTimeout(() => {
+                    goToPage(20); 
+                    page21.classList.remove('page-zooming-out');
+                }, 1200);
+            });
+        }
+
+        const heartBtn = document.getElementById('glowing-heart-btn');
+        if (heartBtn) {
+            heartBtn.addEventListener('click', (e) => { 
+                e.stopPropagation();
+                if(easterEggModal) easterEggModal.classList.add('visible'); 
+            });
+        }
+        const closeBtn = document.getElementById('close-modal-btn');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', (e) => { 
+                e.stopPropagation();
+                if(easterEggModal) easterEggModal.classList.remove('visible'); 
+            });
+        }
+
+        if (mainContentEl) { 
+            // Safety net: this container must never scroll (pages are positioned with transforms).
+            mainContentEl.addEventListener('scroll', () => {
+                if (mainContentEl.scrollLeft || mainContentEl.scrollTop) mainContentEl.scrollTo(0, 0);
+            });
+            mainContentEl.addEventListener('click', (e) => {
+                // Added check for clock-face to prevent navigation
+                if (e.target.closest('.interactive-el') || 
+                    e.target.closest('#navToggle') || 
+                    e.target.closest('.nav-panel') ||
+                    e.target.closest('#clock-face')) {
+                    return;
+                }
+                
+                if (pages[currentPage].id === 'page-13') {
+                    return; 
+                }
+
+                if (pages[currentPage].id === 'page-18') {
+                    return; 
+                }
+
+                if (currentPage < pages.length - 1) {
+                    goToPage(currentPage + 1);
+                }
+            });
+        }
+        
+        const page18Next = document.getElementById('page-18-next');
+        if(page18Next) {
+            page18Next.addEventListener('click', (e) => {
+                e.stopPropagation();
+                goToPage(currentPage + 1);
+            });
+        }
+
+        pages.forEach((page, index) => {
+            page.querySelectorAll('.poetic-text').forEach(el => el.classList.remove('visible'));
+            page.classList.remove('page-active', 'page-previous');
+            if (index === 0) {
+                page.classList.add('page-active'); 
+                page.querySelectorAll('.poetic-text').forEach(el => el.classList.add('visible'));
+            }
+        });
+        runPageLogic('page-1');
+        animateParticles(); 
+
+    </script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const mainContent = document.getElementById('mainContent'); 
+            const topNav = document.getElementById('topNav');
+            const bottomNav = document.getElementById('bottomNav');
+            const leftNav = document.getElementById('leftNav');
+            const rightNav = document.getElementById('rightNav');
+            const navToggle = document.getElementById('navToggle');
+            const navToggleIcon = document.getElementById('navToggleIcon');
+            const navToggleX = document.getElementById('navToggleX');
+            let areNavsOpen = false;
+            
+            function openAllNavs() {
+                if (!mainContent || !topNav || !bottomNav || !leftNav || !rightNav || !navToggleIcon || !navToggleX || !navToggle) return;
+                topNav.classList.remove('-translate-y-full'); bottomNav.classList.remove('translate-y-full');
+                leftNav.classList.remove('-translate-x-full'); rightNav.classList.remove('translate-x-full');
+                navToggleIcon.classList.add('hidden'); navToggleX.classList.remove('hidden');
+                areNavsOpen = true;
+            }
+            function closeAllNavs() {
+                if (!mainContent || !topNav || !bottomNav || !leftNav || !rightNav || !navToggleIcon || !navToggleX || !navToggle) return;
+                topNav.classList.add('-translate-y-full'); bottomNav.classList.add('translate-y-full');
+                leftNav.classList.add('-translate-x-full'); rightNav.classList.add('translate-x-full');
+                navToggleIcon.classList.remove('hidden'); navToggleX.classList.add('hidden');
+                areNavsOpen = false;
+            }
+            function toggleAllNavs() {
+                if (areNavsOpen) { closeAllNavs(); } else { openAllNavs(); }
+            }
+            if(navToggle) {
+                navToggle.addEventListener('click', (e) => { e.stopPropagation(); toggleAllNavs(); });
+            }
+            if(mainContent) {
+                mainContent.addEventListener('click', (e) => {
+                    if (areNavsOpen && !e.target.closest('.interactive-el')) { closeAllNavs(); }
+                });
+            }
+            document.querySelectorAll('.nav-panel .nav-link').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    const targetHref = e.currentTarget.getAttribute('href');
+                    if (targetHref.startsWith('#')) { e.preventDefault(); }
+                    if (areNavsOpen) { setTimeout(closeAllNavs, 100); }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
